@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  UserId         Int             @id @default(autoincrement()) @map("USER_ID")
+  UserFullName   String          @map("USER_NAME")
+  UserEmail      String          @map("USER_EMAIL")
+  UserPhone      String          @map("USER_PHONE")
+  UserGender     String          @map("USER_GENDER")
+  UserAccount    UserAccount?
+  CandidateTrips CandidateTrip[]
+  Notifications UserNotification[]
+  TripRequestsSent    TripRequest[] @relation("RequestCreator")
+  TripRequestsRecived TripRequest[] @relation("RequestRecieved")
+  TripsAsDriver       Trip[]        @relation("TripDriver")
+  TripsAsPassenger    Trip[]        @relation("TripPassenger")
+  Messages UserMessage[]
+
+  ContactsAsOwner UserContact[] @relation("ContactOwner")
+  ContactssAsTarget UserContact[] @relation("ContactTarget")
+  @@map("users")
+}
+
+model UserAccount {
+  AccountId       Int    @id @default(autoincrement())
+  Owner           User   @relation(fields: [UserId], references: [UserId])
+  AccountPassword String @db.VarChar(60)
+  UserId          Int    @unique
+
+  @@map("useraccounts")
+}
+
+model CandidateTrip {
+
+  CandidateTripId      Int        @id @default(autoincrement())
+  CandidateTripCreator User       @relation(fields: [CreatorId], references: [UserId])
+  CreatorId            Int
+  CandidateTripFrom    String
+  CandidateTripTo      String
+  CandidateTripMessage String
+  CandidateTripRequire String
+  CandidateTripStatus  TripStatus @relation(fields: [TripStatusId], references: [TripStatusId])
+
+
+  TripStatusId Int
+  @@map("candidatetrips")
+}
+
+model TripStatus {
+  TripStatusId          Int             @id @default(autoincrement())
+  TripStatusName        String
+  TripStatusDescription String
+  CandidateTrips        CandidateTrip[]
+
+  @@map("tripstatus")
+}
+
+model TripRequest {
+  RequestId           Int    @id @default(autoincrement())
+  RequestCreator      User   @relation("RequestCreator", fields: [RequestCreatorId], references: [UserId])
+  RequestTarget       User   @relation("RequestRecieved", fields: [RequestTargetId], references: [UserId])
+  RequestFromLocation String
+  RequestToLocation   String
+
+  RequestCreatorId Int
+  RequestTargetId  Int
+  @@map("triprequests")
+}
+
+model Trip {
+  TripId          Int  @id @default(autoincrement())
+  TripDriver      User @relation("TripDriver", fields: [TripDriverId], references: [UserId])
+  TripPassenger   User @relation("TripPassenger", fields: [TripPassengerId], references: [UserId])
+  TripDriverId    Int
+  TripPassengerId Int
+
+  @@map("trips")
+}
+
+model UserNotification {
+  @@map("usernotifications")
+  NotificationId Int @id @default(autoincrement())
+
+  UserNotificationTitle String
+  UserNotificationContent String
+  NotificationTarget User @relation(fields: [TargetId], references: [UserId])
+
+  TargetId Int
+}
+
+model UserContact{
+  UserContactId Int @id @default(autoincrement())
+  
+  ContactOwner User @relation("ContactOwner", fields:[ContactOwnerId], references:[UserId])
+  ContactTarget User @relation("ContactTarget", fields:[ContactTargetId], references:[UserId])
+  ContactOwnerId Int 
+  ContactTargetId Int
+  Messages UserMessage[]
+}
+
+model UserMessage{
+  UserMessageId Int @id @default(autoincrement())
+  MessageAuthor User @relation(fields: [AuthorId], references:[UserId])
+  MessageConvo UserContact@relation(fields: [ConversationID], references: [UserContactId])
+
+  AuthorId  Int
+  ConversationID Int
+}
