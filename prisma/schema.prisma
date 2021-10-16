@@ -3,7 +3,7 @@
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+  url      = "mysql://root:password@localhost:3306/swipebike?schema=public"
 }
 
 generator client {
@@ -11,21 +11,21 @@ generator client {
 }
 
 model User {
-  UserId         Int             @id @default(autoincrement()) @map("USER_ID")
-  UserFullName   String          @map("USER_NAME")
-  UserEmail      String          @map("USER_EMAIL")
-  UserPhone      String          @map("USER_PHONE")
-  UserGender     String          @map("USER_GENDER")
-  UserAccount    UserAccount?
-  CandidateTrips CandidateTrip[]
-  Notifications UserNotification[]
-  TripRequestsSent    TripRequest[] @relation("RequestCreator")
-  TripRequestsRecived TripRequest[] @relation("RequestRecieved")
-  TripsAsDriver       Trip[]        @relation("TripDriver")
-  TripsAsPassenger    Trip[]        @relation("TripPassenger")
-  Messages UserMessage[]
+  UserId              Int                @id @default(autoincrement()) @map("USER_ID")
+  UserFullName        String             @map("USER_NAME")
+  UserEmail           String             @map("USER_EMAIL")
+  UserPhone           String             @map("USER_PHONE")
+  UserGender          String             @map("USER_GENDER")
+  UserAccount         UserAccount?
+  CandidateTrips      CandidateTrip[]
+  Notifications       UserNotification[]
+  TripRequestsSent    TripRequest[]      @relation("RequestCreator")
+  TripRequestsRecived TripRequest[]      @relation("RequestRecieved")
+  TripsAsDriver       Trip[]             @relation("TripDriver")
+  TripsAsPassenger    Trip[]             @relation("TripPassenger")
+  Messages            UserMessage[]
 
-  ContactsAsOwner UserContact[] @relation("ContactOwner")
+  ContactsAsOwner   UserContact[] @relation("ContactOwner")
   ContactssAsTarget UserContact[] @relation("ContactTarget")
   @@map("users")
 }
@@ -34,6 +34,7 @@ model UserAccount {
   AccountId       Int    @id @default(autoincrement())
   Owner           User   @relation(fields: [UserId], references: [UserId])
   AccountPassword String @db.VarChar(60)
+  AccountName String 
   UserId          Int    @unique
 
   @@map("useraccounts")
@@ -87,31 +88,31 @@ model Trip {
 }
 
 model UserNotification {
-  @@map("usernotifications")
   NotificationId Int @id @default(autoincrement())
 
-  UserNotificationTitle String
+  UserNotificationTitle   String
   UserNotificationContent String
-  NotificationTarget User @relation(fields: [TargetId], references: [UserId])
+  NotificationTarget      User   @relation(fields: [TargetId], references: [UserId])
 
   TargetId Int
+  @@map("usernotifications")
 }
 
-model UserContact{
+model UserContact {
   UserContactId Int @id @default(autoincrement())
-  
-  ContactOwner User @relation("ContactOwner", fields:[ContactOwnerId], references:[UserId])
-  ContactTarget User @relation("ContactTarget", fields:[ContactTargetId], references:[UserId])
-  ContactOwnerId Int 
+
+  ContactOwner    User          @relation("ContactOwner", fields: [ContactOwnerId], references: [UserId])
+  ContactTarget   User          @relation("ContactTarget", fields: [ContactTargetId], references: [UserId])
+  ContactOwnerId  Int
   ContactTargetId Int
-  Messages UserMessage[]
+  Messages        UserMessage[]
 }
 
-model UserMessage{
-  UserMessageId Int @id @default(autoincrement())
-  MessageAuthor User @relation(fields: [AuthorId], references:[UserId])
-  MessageConvo UserContact@relation(fields: [ConversationID], references: [UserContactId])
+model UserMessage {
+  UserMessageId Int         @id @default(autoincrement())
+  MessageAuthor User        @relation(fields: [AuthorId], references: [UserId])
+  MessageConvo  UserContact @relation(fields: [ConversationID], references: [UserContactId])
 
-  AuthorId  Int
+  AuthorId       Int
   ConversationID Int
 }
