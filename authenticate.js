@@ -1,4 +1,5 @@
 const firebaseAdmin = require ('firebase-admin');
+const firebase = require ('./config/firebaseConfig');
 module.exports = async (req, res, next) => {
   try {
     if (
@@ -8,9 +9,11 @@ module.exports = async (req, res, next) => {
       throw 'Unauthorized';
     }
     const idToken = req.headers.authorization.split ('Bearer ')[1];
+    console.log (idToken);
     req.user = await firebaseAdmin.auth ().verifyIdToken (idToken);
     next ();
   } catch (e) {
+    console.log (e);
     res.status (401);
     res.send ('Unauthorized');
   }
