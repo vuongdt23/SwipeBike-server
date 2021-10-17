@@ -2,24 +2,60 @@ const express = require ('express');
 const bcrypt = require ('bcrypt');
 const AuthRouter = express.Router ();
 const {PrismaClient} = require ('@prisma/client');
+const firebase = require ('../config/firebaseConfig.js');
+const {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} = require ('firebase/auth');
+const auth = getAuth (firebase);
+const firebaseAdmin = require ('firebase-admin');
 
 const prisma = new PrismaClient ();
+
 AuthRouter.post ('/signUp', async (req, res, next) => {
-console.log(req.body)
+  console.log (req.body);
   const UserAccount = {
-    AccountName: req.body.AccountName,
+    UserEmail: req.body.UserEmail,
     AccountPassword: req.body.AccountPassword,
   };
 
-  const hashedPassword = await bcrypt.hash (UserAccount.AccountPassword, 12);
-  prisma.userAccount.create ({
-    data: {
-      AccountName: req.body.AccountName,
-      AccountPassword: hashedPassword,
-      UserId: 1
-    },
-  }).then(result=>{
-      res.send(result)
+  createUserWithEmailAndPassword (
+    auth,
+    UserAccount.UserEmail,
+    UserAccount.AccountPassword
+  ).then (result => {
+    prisma.user
+      .create ({
+        data: {
+          UserEmail: UserAccount.UserEmail,
+          UserAccount: result.user.uid,
+        },
+      })
+      .then (final => {
+        res.status (200);
+        res.json (final);
+      });
+  });
+});
+
+AuthRouter.post ('/login', (req, res) => {
+  const UserAccount = {
+    UserEmail: req.body.UserEmail,
+    AccountPassword: req.body.AccountPassword,
+  };
+  const auth = getAuth (firebase);
+  signInWithEmailAndPassword (
+    auth,
+    UserAccount.UserEmail,
+    UserAccount.AccountPassword
+  ).then (user => {
+    user.user.getIdToken ().then (token => {
+      res.json ({
+        token: token,
+      });
+      res.status (200);
+    });
   });
 });
 

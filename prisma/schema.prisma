@@ -12,11 +12,11 @@ generator client {
 
 model User {
   UserId              Int                @id @default(autoincrement()) @map("USER_ID")
-  UserFullName        String             @map("USER_NAME")
-  UserEmail           String             @map("USER_EMAIL")
-  UserPhone           String             @map("USER_PHONE")
-  UserGender          String             @map("USER_GENDER")
-  UserAccount         UserAccount?
+  UserFullName        String?           
+  UserEmail           String
+  UserAccount         String            
+  UserPhone           String?             
+  UserGender          String?             
   CandidateTrips      CandidateTrip[]
   Notifications       UserNotification[]
   TripRequestsSent    TripRequest[]      @relation("RequestCreator")
@@ -30,15 +30,6 @@ model User {
   @@map("users")
 }
 
-model UserAccount {
-  AccountId       Int    @id @default(autoincrement())
-  Owner           User   @relation(fields: [UserId], references: [UserId])
-  AccountPassword String @db.VarChar(60)
-  AccountName String 
-  UserId          Int    @unique
-
-  @@map("useraccounts")
-}
 
 model CandidateTrip {
 
