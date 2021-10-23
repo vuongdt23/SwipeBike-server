@@ -11,10 +11,14 @@ app.use (express.urlencoded ({extended: true}));
 
 
 app.use ('/auth', AuthRouter);
-app.use((req, res, next)=>{
-  console.log("passed auth")
-  res.send("passed auth")
-})
 app.use (authenticate);
+
+
+
+app.use((req, res, next)=>{
+  console.log("passed auth", req.user)
+  res.send("passed auth")
+  
+})
 app.listen (3001);
 
