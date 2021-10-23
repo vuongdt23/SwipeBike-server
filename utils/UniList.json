@@ -1,0 +1,43 @@
+[
+    {
+        "UniCode": "UIT",
+        "UniFullName":"Trường Đại học Công Nghệ Thông Tin - Đại học Quốc Gia TP.HCM",
+        "UniEmailSuffix": "@gm.uit.edu.vn"
+    },
+    {
+        "UniCode": "USSH",
+        "UniFullName":"Trường Đại học Khoa học Xã hội và Nhân văn - Đại học Quốc Gia TP.HCM",
+        "UniEmailSuffix": "@hcmussh.edu.vn"
+    },
+    {
+        "UniCode": "HCMUT",
+        "UniFullName":"Trường Đại học Bách Khoa - Đại học Quốc Gia TP.HCM",
+        "UniEmailSuffix": "@hcmut.edu.vn"
+    },
+    {
+        "UniCode": "HCMUS",
+        "UniFullName":"Trường Đại học Khoa học Tự nhiên - Đại học Quốc Gia TP.HCM",
+        "UniEmailSuffix": "@student.hcmus.edu.vn"
+    },
+    {
+        "UniCode": "IU",
+        "UniFullName":"Trường Đại học Quốc tế - Đại học Quốc Gia TP.HCM",
+        "UniEmailSuffix": "@gm.uit.edu.vn"
+    },
+    {
+        "UniCode": "NLU",
+        "UniFullName":"Trường Đại học Nông Lâm",
+        "UniEmailSuffix": "@gm.uit.edu.vn"
+    },
+    {
+        "UniCode": "UEL",
+        "UniFullName":"Trường Đại học Kinh tế - Luật - Đại học Quốc Gia TP.HCM",
+        "UniEmailSuffix": "@st.uel.edu.vn"
+        
+    },
+    {
+        "UniCode": "HCMUTE",
+        "UniFullName":"Trường Đại học Sư phạm Kỹ thuật TP.HCM",
+        "UniEmailSuffix": "@gm.uit.edu.vn"
+    }
+]

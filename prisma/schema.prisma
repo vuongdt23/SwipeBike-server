@@ -11,13 +11,14 @@ generator client {
 }
 
 model User {
-  UserId              Int                @id @default(autoincrement()) 
-  UserFullName        String?           
+  UserId              Int                @id @default(autoincrement())
+  UserFullName        String?
   UserEmail           String
-  UserAccount         String            
-  UserPhone           String?             
+  UserAccount         String
+  UserPhone           String?
   UserGender          String?
-  UserUniversity  University? @relation(fields: [UniversityID], references:[UniversityId])    
+  UserDoB             DateTime? 
+  UserUniversity      University?        @relation(fields: [UniversityID], references: [UniversityId])
   CandidateTrips      CandidateTrip[]
   Notifications       UserNotification[]
   TripRequestsSent    TripRequest[]      @relation("RequestCreator")
@@ -26,17 +27,17 @@ model User {
   TripsAsPassenger    Trip[]             @relation("TripPassenger")
   Messages            UserMessage[]
 
-  UniversityID Int
+  UniversityID      Int?
   ContactsAsOwner   UserContact[] @relation("ContactOwner")
   ContactssAsTarget UserContact[] @relation("ContactTarget")
   @@map("users")
 }
 
-model University{
-  UniversityId Int @id @default(autoincrement()) 
-  UniversityName String
+model University {
+  UniversityId          Int    @id @default(autoincrement())
+  UniversityName        String
   UniversityDescription String
-  Users User[]
+  Users                 User[]
 
   @@map("universities")
 }

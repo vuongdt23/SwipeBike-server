@@ -9,8 +9,9 @@ module.exports = async (req, res, next) => {
       throw 'Unauthorized';
     }
     const idToken = req.headers.authorization.split ('Bearer ')[1];
-    console.log (idToken);
+    //console.log (idToken);
     req.user = await firebaseAdmin.auth ().verifyIdToken (idToken);
+    
     next ();
   } catch (e) {
     console.log (e);
