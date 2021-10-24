@@ -1,5 +1,4 @@
 const express = require ('express');
-const bcrypt = require ('bcrypt');
 const AuthRouter = express.Router ();
 const {PrismaClient} = require ('@prisma/client');
 const firebase = require ('../config/firebaseConfig.js');

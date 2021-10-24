@@ -13,7 +13,12 @@ ProfileRouter.get ('/view', (req, res, next) => {
       },
     })
     .then (response => {
-      res.json (response);
+      response.verified = res.json (response);
+    })
+    .catch (firebaseError => {
+      res.json ({
+        error: firebaseError,
+      });
     });
 });
 
@@ -37,6 +42,12 @@ ProfileRouter.post ('/update', (req, res, next) => {
     })
     .then (result => {
       res.json (result);
+    })
+    .catch (error => {
+      res.statusCode = 500;
+      res.json ({
+        error: error
+      });
     });
 });
 

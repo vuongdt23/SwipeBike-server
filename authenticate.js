@@ -13,9 +13,11 @@ module.exports = async (req, res, next) => {
     req.user = await firebaseAdmin.auth ().verifyIdToken (idToken);
     
     next ();
-  } catch (e) {
-    console.log (e);
+  } catch (error) {
+    console.log (error);
     res.status (401);
-    res.send ('Unauthorized');
+    res.json ({
+      error: error
+    });
   }
 };
