@@ -49,8 +49,8 @@ model CandidateTrip {
   CreatorId            Int
   CandidateTripFrom    String
   CandidateTripTo      String
-  CandidateTripMessage String
-  CandidateTripRequire String
+  CandidateTripMessage String?
+  CandidateTripBike Boolean
   CandidateTripStatus  TripStatus @relation(fields: [TripStatusId], references: [TripStatusId])
 
 

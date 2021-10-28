@@ -4,6 +4,11 @@ const apiKey = require('./apiKey.json')
 const AuthRouter = require ('./routers/AuthRouter');
 const authenticate = require ('./authenticate');
 const ProfileRouter = require('./routers/ProfileRouter');
+
+const {Client} = require("@googlemaps/google-maps-services-js");
+const CandidateTripRouter = require('./routers/CandidateTripRouter');
+
+
 firebaseAdmin.initializeApp({ credential:firebaseAdmin.credential.cert(apiKey)})
 
 const app = express ();
@@ -16,11 +21,9 @@ app.use (authenticate);
 
 app.use('/profile', ProfileRouter);
 
-app.use((req, res, next)=>{
-  console.log("passed auth", req.user)
-  res.send("passed auth")
-  
-})
+app.use('/candidatetrip', CandidateTripRouter);
+
+
 
 app.listen (3001);
 

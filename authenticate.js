@@ -1,5 +1,6 @@
 const firebaseAdmin = require ('firebase-admin');
-const firebase = require ('./config/firebaseConfig');
+const {PrismaClient} = require ('@prisma/client');
+const prisma = new PrismaClient;
 module.exports = async (req, res, next) => {
   try {
     if (
@@ -10,7 +11,18 @@ module.exports = async (req, res, next) => {
     }
     const idToken = req.headers.authorization.split ('Bearer ')[1];
     //console.log (idToken);
-    req.user = await firebaseAdmin.auth ().verifyIdToken (idToken);
+    const user = await firebaseAdmin.auth ().verifyIdToken (idToken);
+    user.profile = await prisma.user.findFirst({
+      where:{
+        UserAccount: user.uid
+      }
+    });
+
+   // console.log(user)
+    req.user = user;
+   
+
+  
     
     next ();
   } catch (error) {
