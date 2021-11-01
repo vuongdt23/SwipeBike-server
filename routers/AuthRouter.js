@@ -1,7 +1,7 @@
 const express = require ('express');
 const AuthRouter = express.Router ();
 const {PrismaClient} = require ('@prisma/client');
-const firebase = require ('../config/firebaseConfig.js');
+const firebase = require ('../APIKeys/Firebase.js');
 const {
   getAuth,
   createUserWithEmailAndPassword,
