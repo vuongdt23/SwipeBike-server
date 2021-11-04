@@ -17,7 +17,7 @@ model User {
   UserAccount         String
   UserPhone           String?
   UserGender          String?
-  UserDoB             DateTime? 
+  UserDoB             DateTime?
   UserUniversity      University?        @relation(fields: [UniversityID], references: [UniversityId])
   CandidateTrips      CandidateTrip[]
   Notifications       UserNotification[]
@@ -44,14 +44,18 @@ model University {
 
 model CandidateTrip {
 
-  CandidateTripId      Int        @id @default(autoincrement())
-  CandidateTripCreator User       @relation(fields: [CreatorId], references: [UserId])
-  CreatorId            Int
-  CandidateTripFrom    String
-  CandidateTripTo      String
-  CandidateTripMessage String?
-  CandidateTripBike Boolean
-  CandidateTripStatus  TripStatus @relation(fields: [TripStatusId], references: [TripStatusId])
+  CandidateTripId          Int        @id @default(autoincrement())
+  CandidateTripCreator     User       @relation(fields: [CreatorId], references: [UserId])
+  CreatorId                Int
+  CandidateTripFromLat     Float
+  CandidateTripFromLong    Float
+  CandidateTripFromAddress String
+  CandidateTripToLat       Float
+  CandidateTripToLong      Float
+  CandidateTripToAddress   String
+  CandidateTripMessage     String?
+  CandidateTripBike        Boolean
+  CandidateTripStatus      TripStatus @relation(fields: [TripStatusId], references: [TripStatusId])
 
 
   TripStatusId Int
@@ -68,11 +72,15 @@ model TripStatus {
 }
 
 model TripRequest {
-  RequestId           Int    @id @default(autoincrement())
-  RequestCreator      User   @relation("RequestCreator", fields: [RequestCreatorId], references: [UserId])
-  RequestTarget       User   @relation("RequestRecieved", fields: [RequestTargetId], references: [UserId])
-  RequestFromLocation String
-  RequestToLocation   String
+  RequestId          Int    @id @default(autoincrement())
+  RequestCreator     User   @relation("RequestCreator", fields: [RequestCreatorId], references: [UserId])
+  RequestTarget      User   @relation("RequestRecieved", fields: [RequestTargetId], references: [UserId])
+  RequestFromLat     Float
+  RequestFromLong    Float
+  RequestFromAddress String
+  RequestToAddress   String
+  RequestToLat       Float
+  RequestToLong      Float
 
   RequestCreatorId Int
   RequestTargetId  Int
@@ -85,7 +93,11 @@ model Trip {
   TripPassenger   User @relation("TripPassenger", fields: [TripPassengerId], references: [UserId])
   TripDriverId    Int
   TripPassengerId Int
-
+  TripFromAddress String
+  TripFromLat Float
+  TripToAddress String
+  TripToLat Float
+  TripToLong  Float
   @@map("trips")
 }
 
