@@ -23,10 +23,13 @@ CandidateTripRouter.get ('/:id', (req, res, next) => {
 CandidateTripRouter.post ('/create', (req, res, next) => {
   const CandidateTrip = {
     CreatorId: req.user.profile.UserId,
-    CandidateTripFrom: req.body.CandidateTripFrom,
-    CandidateTripTo: req.body.CandidateTripTo,
+    CandidateTripFromLat: req.body.CandidateTripFromLat,
+    CandidateTripFromLong: req.body.CandidateTripFromLong,
+    CandidateTripToLong: req.body.CandidateTripToLong,
+    CandidateTripFromAddress: req.body.CandidateTripFromAddress,
+    CandidateTripToAddress: req.body.CandidateTripToAddress,
+    CandidateTripToLat: req.body.CandidateTripToLat,
     CandidateTripBike: req.body.CandidateTripBike,
-    TripStatusId: req.body.TripStatusId,
     CandidateTripMessage: req.body.CandidateTripMessage,
   };
 
@@ -57,31 +60,26 @@ CandidateTripRouter.post ('/recommendation', (req, res) => {
       },
     })
     .then (trip => {
-     
-
-        //TODO: Handling these base on location with a proper location service
+      //TODO: Handling these base on location with a proper location service
       prisma.candidateTrip
-      .findMany ({
-        where: {
-          NOT: {
-            CandidateTripId: trip.CandidateTripId,
+        .findMany ({
+          where: {
+            NOT: {
+              CandidateTripId: trip.CandidateTripId,
+            },
+            CandidateTripFrom: trip.CandidateTripFrom,
+            CandidateTripTo: trip.CandidateTripTo,
           },
-          CandidateTripFrom: trip.CandidateTripFrom,
-          CandidateTripTo: trip.CandidateTripTo,
-        },
-      })
-      .then (result => {
-        res.json ({recommendation: result});
-        console.log (result);
-      })
-      .catch (error => {
-        res.status (500);
-        res.json ({error: error});
-        console.log (error);
-      });
+        })
+        .then (result => {
+          res.json ({recommendation: result});
+          console.log (result);
+        })
+        .catch (error => {
+          res.status (500);
+          res.json ({error: error});
+          console.log (error);
+        });
     });
-
-
- 
 });
 module.exports = CandidateTripRouter;

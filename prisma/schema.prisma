@@ -47,18 +47,18 @@ model CandidateTrip {
   CandidateTripId          Int        @id @default(autoincrement())
   CandidateTripCreator     User       @relation(fields: [CreatorId], references: [UserId])
   CreatorId                Int
-  CandidateTripFromLat     Float
-  CandidateTripFromLong    Float
-  CandidateTripFromAddress String
-  CandidateTripToLat       Float
-  CandidateTripToLong      Float
-  CandidateTripToAddress   String
+  CandidateTripFromLat     Float?
+  CandidateTripFromLong    Float?
+  CandidateTripFromAddress String?
+  CandidateTripToLat       Float?
+  CandidateTripToLong      Float?
+  CandidateTripToAddress   String?
   CandidateTripMessage     String?
-  CandidateTripBike        Boolean
-  CandidateTripStatus      TripStatus @relation(fields: [TripStatusId], references: [TripStatusId])
+  CandidateTripBike        Boolean?
+  CandidateTripStatus      TripStatus? @relation(fields: [TripStatusId], references: [TripStatusId])
 
 
-  TripStatusId Int
+  TripStatusId Int?
   @@map("candidatetrips")
 }
 
