@@ -55,6 +55,9 @@ model CandidateTrip {
   CandidateTripToAddress   String?
   CandidateTripMessage     String?
   CandidateTripBike        Boolean?
+  CandidateTripDateTime    String?
+  CandidateTripGenderDesired String?
+
   CandidateTripStatus      TripStatus? @relation(fields: [TripStatusId], references: [TripStatusId])
 
 

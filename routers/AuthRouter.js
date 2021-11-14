@@ -49,12 +49,21 @@ AuthRouter.post ('/login', (req, res) => {
     UserAccount.UserEmail,
     UserAccount.AccountPassword
   ).then (user => {
-    user.user.getIdToken ().then (token => {
-      res.json ({
-        token: token,
+    user.user
+      .getIdToken ()
+      .then (token => {
+        res.status (200);
+        res.json ({
+          token: token,
+        });
+
+        console.log("JWT token", token)
+      })
+      .catch (err => {
+        res.json ({
+          error: {err},
+        });
       });
-      res.status (200);
-    });
   });
 });
 

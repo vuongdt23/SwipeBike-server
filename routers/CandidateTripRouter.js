@@ -31,6 +31,7 @@ CandidateTripRouter.post ('/create', (req, res, next) => {
     CandidateTripToLat: req.body.CandidateTripToLat,
     CandidateTripBike: req.body.CandidateTripBike,
     CandidateTripMessage: req.body.CandidateTripMessage,
+    CandidateTripDateTime: req.body.CandidateTripDateTime
   };
 
   prisma.candidateTrip
@@ -40,13 +41,17 @@ CandidateTripRouter.post ('/create', (req, res, next) => {
     .then (result => {
       res.status (200);
       res.json (result);
+
+      console.log("trip created", result);
     })
     .catch (error => {
       res.status (500);
       res.json ({
         error: error,
+       
       });
-      console.log (error);
+      
+      console.log("trip creation error", error);
     });
 });
 
@@ -82,4 +87,18 @@ CandidateTripRouter.post ('/recommendation', (req, res) => {
         });
     });
 });
+
+CandidateTripRouter.get('/getbycreator/:CreatorId', (req, res)=>{
+  const CreatorID = req.params.CreatorID;
+
+  prisma.candidateTrip.findMany({
+    where:{
+      CreatorId: CreatorID
+    }
+  }).then(result=>{
+    res.json({
+      trips: result
+    })
+  })
+})
 module.exports = CandidateTripRouter;
