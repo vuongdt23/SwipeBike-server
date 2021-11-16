@@ -1,28 +1,26 @@
 const express = require ('express');
 const firebaseAdmin = require ('firebase-admin');
-const apiKey = require('./APIkeys/apiKey.json')
+const apiKey = require ('./APIkeys/apiKey.json');
 const AuthRouter = require ('./routers/AuthRouter');
 const authenticate = require ('./authenticate');
-const ProfileRouter = require('./routers/ProfileRouter');
+const ProfileRouter = require ('./routers/ProfileRouter');
+const storageBucket = require ('./APIKeys/storageBucket');
+const CandidateTripRouter = require ('./routers/CandidateTripRouter');
 
-const CandidateTripRouter = require('./routers/CandidateTripRouter');
-
-
-firebaseAdmin.initializeApp({ credential:firebaseAdmin.credential.cert(apiKey)})
+firebaseAdmin.initializeApp ({
+  credential: firebaseAdmin.credential.cert (apiKey),
+  storageBucket: storageBucket,
+});
 
 const app = express ();
 app.use (express.json ());
 app.use (express.urlencoded ({extended: true}));
 
-
 app.use ('/auth', AuthRouter);
 app.use (authenticate);
 
-app.use('/profile', ProfileRouter);
+app.use ('/profile', ProfileRouter);
 
-app.use('/candidatetrip', CandidateTripRouter);
-
-
+app.use ('/candidatetrip', CandidateTripRouter);
 
 app.listen (3001);
-

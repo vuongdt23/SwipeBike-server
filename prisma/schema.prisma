@@ -18,6 +18,7 @@ model User {
   UserPhone           String?
   UserGender          String?
   UserDoB             DateTime?
+  UserProfilePic String?
   UserUniversity      University?        @relation(fields: [UniversityID], references: [UniversityId])
   CandidateTrips      CandidateTrip[]
   Notifications       UserNotification[]
