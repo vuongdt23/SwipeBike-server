@@ -2,8 +2,9 @@ const express = require ('express');
 const ProfileRouter = express.Router ();
 const {PrismaClient} = require ('@prisma/client');
 const firebaseAdmin = require ('firebase-admin');
-
+const storageBucket = require ('../APIKeys/storageBucket');
 const multer = require ('multer');
+const {format} = require ('path/posix');
 const prisma = new PrismaClient ();
 const upload = multer ({
   storage: multer.memoryStorage (),
@@ -88,8 +89,12 @@ ProfileRouter.post ('/updatePic', upload.single ('file'), (req, res, next) => {
     res.status (400).send ('Error: No files found');
   }
 
- // console.log("file ", req.file);
-  const blob = firebaseAdmin.storage ().bucket ().file (req.file.originalname);
+  const user = req.user;
+  const time = new Date ().toISOString ();
+
+  // console.log("file ", req.file);
+  const fileName = 'user_' + user.profile.UserId + '_pic_' + time;
+  const blob = firebaseAdmin.storage ().bucket ().file (fileName);
   const blobWriter = blob.createWriteStream ({
     metadata: {
       contentType: req.file.mimetype,
@@ -99,8 +104,21 @@ ProfileRouter.post ('/updatePic', upload.single ('file'), (req, res, next) => {
     console.log ('error blobwrite', err);
   });
   blobWriter.on ('finish', () => {
-    res.status (200).send ('File uploaded.');
-   
+    blob.makePublic ().then (() => {
+      prisma.user
+        .updateMany ({
+          where: {UserId: user.UserId},
+          data: {
+            UserProfilePic: blob.publicUrl (),
+          },
+        })
+        .then (result => {
+          res.status (200);
+          res.json ({
+            message: 'Profile pic updated',
+          });
+        });
+    });
   });
   blobWriter.end (req.file.buffer);
 });

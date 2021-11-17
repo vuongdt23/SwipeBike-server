@@ -23,7 +23,7 @@ module.exports = async (req, res, next) => {
    
 
   
-    
+   // console.log("user authenticated with jwt token", user);
     next ();
   } catch (error) {
     console.log (error);
