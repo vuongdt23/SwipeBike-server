@@ -18,7 +18,7 @@ model User {
   UserPhone           String?
   UserGender          String?
   UserDoB             DateTime?
-  UserProfilePic String?
+  UserProfilePic      String?
   UserUniversity      University?        @relation(fields: [UniversityID], references: [UniversityId])
   CandidateTrips      CandidateTrip[]
   Notifications       UserNotification[]
@@ -45,21 +45,21 @@ model University {
 
 model CandidateTrip {
 
-  CandidateTripId          Int        @id @default(autoincrement())
-  CandidateTripCreator     User       @relation(fields: [CreatorId], references: [UserId])
-  CreatorId                Int
-  CandidateTripFromLat     Float?
-  CandidateTripFromLong    Float?
-  CandidateTripFromAddress String?
-  CandidateTripToLat       Float?
-  CandidateTripToLong      Float?
-  CandidateTripToAddress   String?
-  CandidateTripMessage     String?
-  CandidateTripBike        Boolean?
-  CandidateTripDateTime    String?
+  CandidateTripId            Int      @id @default(autoincrement())
+  CandidateTripCreator       User     @relation(fields: [CreatorId], references: [UserId])
+  CreatorId                  Int
+  CandidateTripFromLat       Float?
+  CandidateTripFromLong      Float?
+  CandidateTripFromAddress   String?
+  CandidateTripToLat         Float?
+  CandidateTripToLong        Float?
+  CandidateTripToAddress     String?
+  CandidateTripMessage       String?
+  CandidateTripBike          Boolean?
+  CandidateTripDateTime      String?
   CandidateTripGenderDesired String?
 
-  CandidateTripStatus      TripStatus? @relation(fields: [TripStatusId], references: [TripStatusId])
+  CandidateTripStatus TripStatus? @relation(fields: [TripStatusId], references: [TripStatusId])
 
 
   TripStatusId Int?
@@ -85,23 +85,26 @@ model TripRequest {
   RequestToAddress   String
   RequestToLat       Float
   RequestToLong      Float
-
+  CreatorBike Boolean
   RequestCreatorId Int
   RequestTargetId  Int
   @@map("triprequests")
 }
 
 model Trip {
-  TripId          Int  @id @default(autoincrement())
-  TripDriver      User @relation("TripDriver", fields: [TripDriverId], references: [UserId])
-  TripPassenger   User @relation("TripPassenger", fields: [TripPassengerId], references: [UserId])
+  TripId          Int    @id @default(autoincrement())
+  TripDriver      User   @relation("TripDriver", fields: [TripDriverId], references: [UserId])
+  TripPassenger   User   @relation("TripPassenger", fields: [TripPassengerId], references: [UserId])
   TripDriverId    Int
   TripPassengerId Int
   TripFromAddress String
-  TripFromLat Float
-  TripToAddress String
-  TripToLat Float
-  TripToLong  Float
+  TripToAddress   String
+
+  TripFromLat  Float
+  TripFromLong Float
+
+  TripToLat  Float
+  TripToLong Float
   @@map("trips")
 }
 

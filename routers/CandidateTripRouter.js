@@ -55,8 +55,8 @@ CandidateTripRouter.post ('/create', (req, res, next) => {
     });
 });
 
-CandidateTripRouter.post ('/recommendation', (req, res) => {
-  const CandidateTripID = req.body.CandidateTripId;
+CandidateTripRouter.get ('/recommendation/:CandidateTripId', (req, res) => {
+  const CandidateTripID = req.params.CandidateTripId;
 
   prisma.candidateTrip
     .findFirst ({
