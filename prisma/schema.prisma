@@ -69,7 +69,7 @@ model CandidateTrip {
 model TripStatus {
   TripStatusId          Int             @id @default(autoincrement())
   TripStatusName        String
-  TripStatusDescription String
+  TripStatusDescription String       
   CandidateTrips        CandidateTrip[]
 
   @@map("tripstatus")
