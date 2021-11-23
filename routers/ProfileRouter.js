@@ -29,7 +29,7 @@ ProfileRouter.get("/view", (req, res, next) => {
 });
 
 ProfileRouter.post("/update", (req, res, next) => {
-  console.log("upload enpoint");
+  
   const updateInfo = {
     UserFullName: req.body.UserFullName,
     UserPhone: req.body.UserPhone,
@@ -64,7 +64,9 @@ ProfileRouter.post("/setup", (req, res, next) => {
     UserPhone: req.body.UserPhone,
     UserGender: req.body.UserGender,
     UserDoB: req.body.UserDoB,
+    IsSetUp: true,
   };
+  console.log('update info', updateInfo)
   const user = req.user;
   prisma.user
     .updateMany({
@@ -78,6 +80,7 @@ ProfileRouter.post("/setup", (req, res, next) => {
     })
     .catch((error) => {
       res.statusCode = 500;
+      console.log("profile setup error", error)
       res.json({
         error: error,
       });

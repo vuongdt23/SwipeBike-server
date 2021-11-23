@@ -57,11 +57,11 @@ AuthRouter.post ('/login', (req, res) => {
           token: token,
         });
 
-        console.log("JWT token", token)
+        console.log ('JWT token', token);
       })
       .catch (err => {
         res.json ({
-          error: {err},
+          error: err,
         });
       });
   });
