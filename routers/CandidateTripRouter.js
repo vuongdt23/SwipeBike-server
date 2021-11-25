@@ -80,13 +80,13 @@ CandidateTripRouter.get ('/recommendation/:CandidateTripId', (req, res) => {
         lng: tripToRec.CandidateTripToLong,
       });
 
-      prisma.tripStatus
-        .findFirst ({
-          include: {CandidateTrips: true},
+      prisma.candidateTrip
+        .findMany ({
           where: {TripStatusId: 1},
+          include:{CandidateTripCreator: true}
         })
         .then (activeTrips => {
-          let ActiveTrips = activeTrips.CandidateTrips;
+          let ActiveTrips = activeTrips;
 
           ActiveTrips = ActiveTrips.filter (trip => {
             return (
@@ -173,6 +173,7 @@ CandidateTripRouter.get ('/getbycreator/:CreatorId', (req, res) => {
       where: {
         CreatorId: CreatorID,
       },
+      include: {CandidateTripCreator: true},
     })
     .then (result => {
       res.json ({
