@@ -83,7 +83,11 @@ CandidateTripRouter.get ('/recommendation/:CandidateTripId', (req, res) => {
       prisma.candidateTrip
         .findMany ({
           where: {TripStatusId: 1},
-          include:{CandidateTripCreator: true}
+          include: {
+            CandidateTripCreator: {
+              select: {UserFullName: true, UserProfilePic: true, UserId: true},
+            },
+          },
         })
         .then (activeTrips => {
           let ActiveTrips = activeTrips;
@@ -173,7 +177,15 @@ CandidateTripRouter.get ('/getbycreator/:CreatorId', (req, res) => {
       where: {
         CreatorId: CreatorID,
       },
-      include: {CandidateTripCreator: true},
+      include: {
+        CandidateTripCreator: {
+          select: {
+            UserFullName: true,
+            UserProfilePic: true,
+            UserId: true,
+          },
+        },
+      },
     })
     .then (result => {
       res.json ({
