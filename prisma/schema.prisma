@@ -3,7 +3,7 @@
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://root:duyducmysql012@localhost:3306/swipebike?schema=public"
+  url      = "mysql://root:password@localhost:3306/swipebike?schema=public"
 }
 
 generator client {
