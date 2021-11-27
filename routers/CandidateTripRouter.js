@@ -169,7 +169,7 @@ CandidateTripRouter.get ('/recommendation/:CandidateTripId', (req, res) => {
 });
 
 CandidateTripRouter.get ('/getbycreator/:CreatorId', (req, res) => {
-  const CreatorID = req.params.CreatorID;
+  const CreatorID = Number.parseInt (req.params.CreatorId);
 
   prisma.candidateTrip
     .findMany ({
