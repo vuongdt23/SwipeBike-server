@@ -93,10 +93,9 @@ CandidateTripRouter.get ('/recommendation/:CandidateTripId', (req, res) => {
           let ActiveTrips = activeTrips;
 
           ActiveTrips = ActiveTrips.filter (trip => {
-            return (
-              trip.CreatorId !== tripToRec.CreatorId &&
-              trip.CandidateTripBike !== tripToRec.CandidateTripBike
-            );
+            return trip.CandidateTripBike !== tripToRec.CandidateTripBike;
+          }).filter (trip => {
+            return trip.CreatorId != tripToRec.CreatorId;
           });
           console.log ('Active Trips: ', ActiveTrips);
           let ActiveTripOrigins = ActiveTrips.map (trip => {

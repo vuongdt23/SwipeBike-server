@@ -68,6 +68,7 @@ ProfileRouter.post("/setup", (req, res, next) => {
   };
   console.log('update info', updateInfo)
   const user = req.user;
+  console.log(user);
   prisma.user
     .updateMany({
       where: {
@@ -111,12 +112,13 @@ ProfileRouter.post("/updatePic", upload.single("file"), (req, res, next) => {
       console.log(blob.publicUrl());
       prisma.user
         .updateMany({
-          where: { UserId: user.UserId },
+          where: { UserAccount: user.uid },
           data: {
             UserProfilePic: blob.publicUrl(),
           },
         })
         .then((result) => {
+          console.log("users changed", result.count)
           res.status(200);
           res.json({
             message: "Profile pic updated",
