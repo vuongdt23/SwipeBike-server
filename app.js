@@ -7,10 +7,9 @@ const ProfileRouter = require ('./routers/ProfileRouter');
 const storageBucket = require ('./APIKeys/storageBucket');
 const CandidateTripRouter = require ('./routers/CandidateTripRouter');
 const NotificationRouter = require ('./routers/NotificationRouter');
+const TripRequestRouter = require ('./routers/TripRequestRouter');
+
 var cors = require ('cors');
-
-
-
 
 firebaseAdmin.initializeApp ({
   credential: firebaseAdmin.credential.cert (apiKey),
@@ -23,12 +22,11 @@ app.use (express.urlencoded ({extended: true}));
 app.use (cors ());
 
 app.use ('/auth', AuthRouter);
-app.use ('/notification', NotificationRouter);
 
 app.use (authenticate);
-
+app.use ('/notification', NotificationRouter);
 app.use ('/profile', ProfileRouter);
-
+app.use ('/tripRequest', TripRequestRouter);
 app.use ('/candidatetrip', CandidateTripRouter);
 
 app.listen (3001);

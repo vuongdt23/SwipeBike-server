@@ -11,15 +11,15 @@ generator client {
 }
 
 model User {
-  UserId              Int                @id @default(autoincrement())
-  UserFullName        String?
-  UserEmail           String
-  UserAccount         String
-  UserPhone           String?
-  UserGender          String?
-  UserDoB             String?
-  UserProfilePic      String?
-  IsSetUp             Boolean @default(false)
+  UserId         Int     @id @default(autoincrement())
+  UserFullName   String?
+  UserEmail      String
+  UserAccount    String
+  UserPhone      String?
+  UserGender     String?
+  UserDoB        String?
+  UserProfilePic String?
+  IsSetUp        Boolean @default(false)
 
   UserUniversity      University?        @relation(fields: [UniversityID], references: [UniversityId])
   CandidateTrips      CandidateTrip[]
@@ -71,42 +71,71 @@ model CandidateTrip {
 model TripStatus {
   TripStatusId          Int             @id @default(autoincrement())
   TripStatusName        String
-  TripStatusDescription String       
+  TripStatusDescription String
   CandidateTrips        CandidateTrip[]
+  TripRequests          TripRequest[]
 
   @@map("tripstatus")
 }
 
 model TripRequest {
-  RequestId          Int    @id @default(autoincrement())
-  RequestCreator     User   @relation("RequestCreator", fields: [RequestCreatorId], references: [UserId])
-  RequestTarget      User   @relation("RequestRecieved", fields: [RequestTargetId], references: [UserId])
-  RequestFromLat     Float
-  RequestFromLong    Float
-  RequestFromAddress String
-  RequestToAddress   String
-  RequestToLat       Float
-  RequestToLong      Float
-  CreatorBike Boolean
-  RequestCreatorId Int
-  RequestTargetId  Int
+  RequestId         Int     @id @default(autoincrement())
+  RequestCreator    User?   @relation("RequestCreator", fields: [RequestCreatorId], references: [UserId])
+  RequestTarget     User?   @relation("RequestRecieved", fields: [RequestTargetId], references: [UserId])
+  DriverFromLat     Float?
+  DriverFromLong    Float?
+  DriverFromAddress String?
+  DriverToAddress   String?
+  DriverToLat       Float?
+  DriverToLong      Float?
+
+  PassengerFromLat     Float?
+  PassengerFromLong    Float?
+  PassengerFromAddress String?
+  PassengerToAddress   String?
+  PassengerToLat       Float?
+  PassengerToLong      Float?
+
+  RequestCreateTime String?
+  TripTime          String?
+
+  RequestStatus TripStatus? @relation(fields: [TripStatusId], references: [TripStatusId])
+
+  CreatorBike      Boolean?
+  RequestCreatorId Int?
+  TripStatusId     Int?
+  RequestTargetId  Int?
   @@map("triprequests")
 }
 
 model Trip {
-  TripId          Int    @id @default(autoincrement())
-  TripDriver      User   @relation("TripDriver", fields: [TripDriverId], references: [UserId])
-  TripPassenger   User   @relation("TripPassenger", fields: [TripPassengerId], references: [UserId])
+  TripId Int @id @default(autoincrement())
+
+
+  TripDriver      User?    @relation("TripDriver", fields: [TripDriverId], references: [UserId])
+  TripPassenger   User?    @relation("TripPassenger", fields: [TripPassengerId], references: [UserId])
+  CreatorBike     Boolean?
   TripDriverId    Int
   TripPassengerId Int
-  TripFromAddress String
-  TripToAddress   String
 
-  TripFromLat  Float
-  TripFromLong Float
 
-  TripToLat  Float
-  TripToLong Float
+  DriverFromLat     Float?
+  DriverFromLong    Float?
+  DriverFromAddress String?
+  DriverToAddress   String?
+  DriverToLat       Float?
+  DriverToLong      Float?
+
+  PassengerFromLat     Float?
+  PassengerFromLong    Float?
+  PassengerFromAddress String?
+  PassengerToAddress   String?
+  PassengerToLat       Float?
+  PassengerToLong      Float?
+
+
+  TripCreatedTime String?
+  TripStartTime   String?
   @@map("trips")
 }
 
@@ -115,9 +144,9 @@ model UserNotification {
 
   UserNotificationTitle   String
   UserNotificationContent String
-  NotificationTarget      User   @relation(fields: [TargetId], references: [UserId])
-
-  TargetId Int
+  NotificationTarget      User     @relation(fields: [TargetId], references: [UserId])
+  NotificationRead        Boolean?
+  TargetId                Int
   @@map("usernotifications")
 }
 
