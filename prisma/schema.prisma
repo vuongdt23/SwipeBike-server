@@ -21,13 +21,15 @@ model User {
   UserProfilePic String?
   IsSetUp        Boolean @default(false)
 
-  UserUniversity      University?        @relation(fields: [UniversityID], references: [UniversityId])
-  CandidateTrips      CandidateTrip[]
-  Notifications       UserNotification[]
-  TripRequestsSent    TripRequest[]      @relation("RequestCreator")
-  TripRequestsRecived TripRequest[]      @relation("RequestRecieved")
-  TripsAsDriver       Trip[]             @relation("TripDriver")
-  TripsAsPassenger    Trip[]             @relation("TripPassenger")
+  UserUniversity        University?        @relation(fields: [UniversityID], references: [UniversityId])
+  CandidateTrips        CandidateTrip[]
+  NotificationsReceived UserNotification[] @relation("NotificationCreated")
+  NotificationsSent     UserNotification[] @relation("NotificationReceived")
+
+  TripRequestsSent    TripRequest[] @relation("RequestCreator")
+  TripRequestsRecived TripRequest[] @relation("RequestRecieved")
+  TripsAsDriver       Trip[]        @relation("TripDriver")
+  TripsAsPassenger    Trip[]        @relation("TripPassenger")
   Messages            UserMessage[]
 
   UniversityID      Int?
@@ -142,11 +144,15 @@ model Trip {
 model UserNotification {
   NotificationId Int @id @default(autoincrement())
 
-  UserNotificationTitle   String
-  UserNotificationContent String
-  NotificationTarget      User     @relation(fields: [TargetId], references: [UserId])
+  UserNotificationTitle   String?
+  UserNotificationContent String?
+  NotificationTarget      User?    @relation("NotificationReceived", fields: [NotificationTargetId], references: [UserId])
+  NotificationCreator     User?    @relation("NotificationCreated", fields: [NotificationCreatorId], references: [UserId])
+  CreatorImage            String?
+  NotificationCreateTime  String?
+  NotificationCreatorId   Int?
+  NotificationTargetId    Int?
   NotificationRead        Boolean?
-  TargetId                Int
   @@map("usernotifications")
 }
 

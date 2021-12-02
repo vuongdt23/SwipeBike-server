@@ -2,31 +2,19 @@ const express = require ('express');
 const NotificationRouter = express.Router ();
 const firebaseAdmin = require ('firebase-admin');
 const tokens = require ('../config/token');
+const {saveTokenToStore} = require ('../FCMOperations/TokenStore');
 
 NotificationRouter.post ('/register', (req, res) => {
-  const User = req.user;
-  tokens.push (req.body.token);
-  console.log ('tokens ', tokens);
-  res.status (200).json ({message: 'Successfully registered FCM Token!'});
-});
+  const user = req.user;
+  const token = req.body.token;
 
-NotificationRouter.post ('/notifications', async (req, res) => {
-  try {
-    const {title, body, imageUrl} = req.body;
-    await firebaseAdmin.messaging ().sendMulticast ({
-      tokens,
-      notification: {
-        title,
-        body,
-        imageUrl,
-      },
+  saveTokenToStore (token, user.uid).then (result => {
+    res.status (200).json ({
+      message: 'Successfully registered FCM Token!',
+      result: result,
     });
-    res.status (200).json ({message: 'Successfully sent notifications!'});
-  } catch (err) {
-    res
-      .status (err.status || 500)
-      .json ({message: err.message || 'Something went wrong!'});
-  }
+    console.log (result);
+  });
 });
 
 module.exports = NotificationRouter;

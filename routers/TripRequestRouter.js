@@ -3,6 +3,8 @@ const TripRequestRouter = express.Router ();
 const {PrismaClient} = require ('@prisma/client');
 const prisma = new PrismaClient ();
 const moment = require ('moment');
+const {NotifyOfRequestCreation} = require ('../FCMOperations/TripRequest');
+const {getTokensByUserId} = require ('../FCMOperations/TokenStore');
 TripRequestRouter.post ('/RouteRecommendation', (req, res, next) => {
   const user = req.user;
 
@@ -20,6 +22,9 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
       where: {
         CandidateTripId: myTripId,
       },
+      include: {
+        CandidateTripCreator: true,
+      },
     })
     .then (MyTrip => {
       prisma.candidateTrip
@@ -27,13 +32,16 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
           where: {
             CandidateTripId: theirTripId,
           },
+          include: {
+            CandidateTripCreator: true,
+          },
         })
         .then (TheirTrip => {
           if (MyTrip.CandidateTripBike) {
             prisma.tripRequest
               .create ({
                 data: {
-                  RequestCreatorId: user.profile.UserId,
+                  RequestCreatorId: MyTrip.CreatorId,
                   CreatorBike: true,
                   DriverFromAddress: MyTrip.CandidateTripFromAddress,
                   DriverFromLat: MyTrip.CandidateTripFromLat,
@@ -48,13 +56,25 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
                   PassengerToLat: TheirTrip.CandidateTripToLat,
                   PassengerToLong: TheirTrip.CandidateTripToLong,
                   RequestCreateTime: moment ().toISOString (),
+                  RequestTargetId: TheirTrip.CreatorId,
                   TripStatusId: 5,
                 },
               })
               .then (prismaResult => {
-                res.status (200);
+                getTokensByUserId (
+                  TheirTrip.CandidateTripCreator.UserAccount
+                ).then (firestoreResult => {
+                  let tokenArr = [];
+                  firestoreResult.forEach (doc => {
+                    tokenArr.push (doc.data ().token);
+                  });
+                  console.log (tokenArr);
+                  //FCM
+                  NotifyOfRequestCreation (tokenArr);
+                  res.status (200);
 
-                res.json (prismaResult);
+                  res.json (prismaResult);
+                });
               })
               .catch (error => {
                 res.status (500);
@@ -67,6 +87,7 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
               .create ({
                 data: {
                   CreatorBike: false,
+                  RequestCreatorId: MyTrip.CreatorId,
                   DriverFromAddress: TheirTrip.CandidateTripFromAddress,
                   DriverFromLat: TheirTrip.CandidateTripFromLat,
                   DriverFromLong: TheirTrip.CandidateTripFromLong,
@@ -79,13 +100,26 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
                   PassengerToAddress: MyTrip.CandidateTripToAddress,
                   PassengerToLat: MyTrip.CandidateTripToLat,
                   PassengerToLong: MyTrip.CandidateTripToLong,
+                  RequestTargetId: TheirTrip.CreatorId,
+                  TripStatusId: 5,
                   RequestCreateTime: moment ().toISOString (),
                 },
               })
               .then (prismaResult => {
-                res.status (200);
+                getTokensByUserId (
+                  TheirTrip.CandidateTripCreator.UserAccount
+                ).then (firestoreResult => {
+                  let tokenArr = [];
+                  firestoreResult.forEach (doc => {
+                    tokenArr.push (doc.data ().token);
+                  });
+                  console.log (tokenArr);
+                  //FCM
+                  NotifyOfRequestCreation (tokenArr);
+                  res.status (200);
 
-                res.json (prismaResult);
+                  res.json (prismaResult);
+                });
               })
               .catch (error => {
                 res.status (500);
@@ -123,30 +157,84 @@ TripRequestRouter.post ('/acceptRequest/:requestId', (req, res, next) => {
             },
           })
           .then (updateResult => {
-            prisma.trip.create ({
-              data: {
-                TripTime: TripRequest.TripTime,
-                DriverFromAddress: TripRequest.DriverFromAddress,
-                DriverFromLat: TripRequest.DriverFromLat,
-                DriverFromLong: TripRequest.DriverFromLong,
-                DriverToAddress: TripRequest.DriverToAddress,
-                DriverToLat: TripRequest.DriverToLat,
-                DriverToLong: TripRequest.DriverToLong,
-                CreatorBike: TripRequest.CreatorBike,
-                TripCreatedTime: moment().toISOString(),
-                PassengerFromAddress: TripRequest.PassengerFromAddress,
-                PassengerFromLat: TripRequest.PassengerFromLat,
-                PassengerFromLong: TripRequest.PassengerFromLong,
-                PassengerToAddress: TripRequest.PassengerToAddress,
-                PassengerToLat: TripRequest.PassengerToLat,
-                PassengerToLong: TripRequest.PassengerToLong,
-                
-                
-
-              },
-            });
+            prisma.trip
+              .create ({
+                data: {
+                  TripTime: TripRequest.TripTime,
+                  DriverFromAddress: TripRequest.DriverFromAddress,
+                  DriverFromLat: TripRequest.DriverFromLat,
+                  DriverFromLong: TripRequest.DriverFromLong,
+                  DriverToAddress: TripRequest.DriverToAddress,
+                  DriverToLat: TripRequest.DriverToLat,
+                  DriverToLong: TripRequest.DriverToLong,
+                  CreatorBike: TripRequest.CreatorBike,
+                  TripCreatedTime: moment ().toISOString (),
+                  PassengerFromAddress: TripRequest.PassengerFromAddress,
+                  PassengerFromLat: TripRequest.PassengerFromLat,
+                  PassengerFromLong: TripRequest.PassengerFromLong,
+                  PassengerToAddress: TripRequest.PassengerToAddress,
+                  PassengerToLat: TripRequest.PassengerToLat,
+                  PassengerToLong: TripRequest.PassengerToLong,
+                  TripDriverId: TripRequest.CreatorBike
+                    ? TripRequest.RequestCreatorId
+                    : TripRequest.RequestTargetId,
+                },
+              })
+              .then (createTripResult => {
+                res
+                  .status (200)
+                  .json ({
+                    message: 'accept request sucessfully',
+                    trip: createTripResult,
+                  })
+                  .catch (error => {
+                    res.status (500).json ({error: error});
+                  });
+              });
+          })
+          .catch (error => {
+            res.status (500).json ({error: error});
           });
       }
+    })
+    .catch (error => {
+      res.status (500).json ({error: error});
+    });
+});
+
+TripRequestRouter.get ('/getUserPendingSentRequests', (req, res, next) => {
+  const user = req.user.profile;
+
+  prisma.tripRequest
+    .findMany ({
+      where: {
+        RequestCreatorId: Number.parseInt (user.UserId),
+        TripStatusId: 5,
+      },
+    })
+    .then (result => {
+      res.status (200).json ({
+        requests: result,
+      });
+    });
+});
+TripRequestRouter.get ('/getUserPendingReceivedRequests', (req, res, next) => {
+  const user = req.user.profile;
+
+  prisma.tripRequest
+    .findMany ({
+      where: {
+        RequestTargetId: Number.parseInt (user.UserId),
+        TripStatusId: 5,
+      },
+    })
+    .then (result => {
+      res.status (200).json ({
+        requests: result,
+      });
+    })
+    .catch (error => {
+      res.status (500).json ({error: error});
     });
 });
 module.exports = TripRequestRouter;
