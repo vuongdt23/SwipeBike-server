@@ -1,9 +1,9 @@
 const express = require ('express');
 const NotificationRouter = express.Router ();
-const firebaseAdmin = require ('firebase-admin');
-const tokens = require ('../config/token');
-const {saveTokenToStore} = require ('../FCMOperations/TokenStore');
 
+const {saveTokenToStore} = require ('../FCMOperations/TokenStore');
+const {PrismaClient} = require ('@prisma/client');
+const prisma = new PrismaClient ();
 NotificationRouter.post ('/register', (req, res) => {
   const user = req.user;
   const token = req.body.token;
@@ -17,4 +17,23 @@ NotificationRouter.post ('/register', (req, res) => {
   });
 });
 
+NotificationRouter.get ('/getMyNotifications', (req, res) => {
+  const user = req.user;
+  prisma.userNotification
+    .findMany ({
+      where: {
+        NotificationTargetId: user.profile.UserId,
+      },
+      include: {
+        NotificationCreator: {
+          select: {UserFullName: true},
+        },
+      },
+    })
+    .then (notiList => {
+      res.status (200).json ({
+        notifications: notiList,
+      });
+    });
+});
 module.exports = NotificationRouter;

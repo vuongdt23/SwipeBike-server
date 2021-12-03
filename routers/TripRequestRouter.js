@@ -61,20 +61,45 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
                 },
               })
               .then (prismaResult => {
-                getTokensByUserId (
-                  TheirTrip.CandidateTripCreator.UserAccount
-                ).then (firestoreResult => {
-                  let tokenArr = [];
-                  firestoreResult.forEach (doc => {
-                    tokenArr.push (doc.data ().token);
+                getTokensByUserId (TheirTrip.CandidateTripCreator.UserAccount)
+                  .then (firestoreResult => {
+                    let tokenArr = [];
+                    firestoreResult.forEach (doc => {
+                      tokenArr.push (doc.data ().token);
+                    });
+                    console.log (tokenArr);
+                    //FCM
+                    NotifyOfRequestCreation (tokenArr);
+                    prisma.userNotification
+                      .create ({
+                        data: {
+                          CreatorImage: MyTrip.CandidateTripCreator
+                            .UserProfilePic,
+                          NotificationRead: false,
+                          NotificationTargetId: TheirTrip.CreatorId,
+                          NotificationCreatorId: MyTrip.CreatorId,
+                          NotificationCreateTime: moment ().toISOString (),
+                          UserNotificationContent: MyTrip.CandidateTripCreator
+                            .UserFullName + ' muốn ghép chuyến đi với bạn',
+                          UserNotificationTitle: 'Lời mời ghép đôi mới',
+                        },
+                      })
+                      .then (NotiCreateResult => {
+                        res.status (200).json (NotiCreateResult);
+                      })
+                      .catch (error => {
+                        res.status (500);
+                        res.json ({
+                          error: error,
+                        });
+                      });
+                  })
+                  .catch (error => {
+                    res.status (500);
+                    res.json ({
+                      error: error,
+                    });
                   });
-                  console.log (tokenArr);
-                  //FCM
-                  NotifyOfRequestCreation (tokenArr);
-                  res.status (200);
-
-                  res.json (prismaResult);
-                });
               })
               .catch (error => {
                 res.status (500);
@@ -116,9 +141,30 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
                   console.log (tokenArr);
                   //FCM
                   NotifyOfRequestCreation (tokenArr);
-                  res.status (200);
 
-                  res.json (prismaResult);
+                  prisma.userNotification
+                    .create ({
+                      data: {
+                        CreatorImage: MyTrip.CandidateTripCreator
+                          .UserProfilePic,
+                        NotificationRead: false,
+                        NotificationTargetId: TheirTrip.CreatorId,
+                        NotificationCreatorId: MyTrip.CreatorId,
+                        NotificationCreateTime: moment ().toISOString (),
+                        UserNotificationContent: MyTrip.CandidateTripCreator
+                          .UserFullName + ' muốn ghép chuyến đi với bạn',
+                        UserNotificationTitle: 'Lời mời ghép đôi mới',
+                      },
+                    })
+                    .then (NotiCreateResult => {
+                      res.status (200).json (NotiCreateResult);
+                    })
+                    .catch (error => {
+                      res.status (500);
+                      res.json ({
+                        error: error,
+                      });
+                    });
                 });
               })
               .catch (error => {
@@ -129,6 +175,13 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
               });
           }
         });
+    })
+    .catch (error => {
+      res.status (500);
+      console.log (err);
+      res.json ({
+        err: error,
+      });
     })
     .catch (error => {
       res.status (500);
