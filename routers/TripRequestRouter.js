@@ -264,6 +264,20 @@ TripRequestRouter.get ('/getUserPendingSentRequests', (req, res, next) => {
         RequestCreatorId: Number.parseInt (user.UserId),
         TripStatusId: 5,
       },
+      include: {
+        RequestCreator: {
+          select: {
+            UserProfilePic: true,
+            UserFullName: true,
+          },
+        },
+        RequestTarget: {
+          select: {
+            UserProfilePic: true,
+            UserFullName: true,
+          },
+        },
+      },
     })
     .then (result => {
       res.status (200).json ({
@@ -279,6 +293,20 @@ TripRequestRouter.get ('/getUserPendingReceivedRequests', (req, res, next) => {
       where: {
         RequestTargetId: Number.parseInt (user.UserId),
         TripStatusId: 5,
+      },
+      include: {
+        RequestCreator: {
+          select: {
+            UserProfilePic: true,
+            UserFullName: true,
+          },
+        },
+        RequestTarget: {
+          select: {
+            UserProfilePic: true,
+            UserFullName: true,
+          },
+        },
       },
     })
     .then (result => {
@@ -298,7 +326,7 @@ TripRequestRouter.post ('/rejectRequest/:requestId', (req, res, next) => {
     .findFirst ({where: {RequestId: requestId}})
     .then (tripRequest => {
       //console.log ('userId, ', userProfile.UserId);
-     // console.log ('requestTargetId, ', tripRequest.RequestTargetId);
+      // console.log ('requestTargetId, ', tripRequest.RequestTargetId);
       if (tripRequest.RequestTargetId !== userProfile.UserId) {
         res.status (401);
         res.send ('You are not authorized to reject this request');
@@ -318,9 +346,6 @@ TripRequestRouter.post ('/rejectRequest/:requestId', (req, res, next) => {
           });
       }
     });
-
-
-
 });
 
 TripRequestRouter.post ('/cancelRequest/:requestId', (req, res, next) => {
@@ -330,7 +355,7 @@ TripRequestRouter.post ('/cancelRequest/:requestId', (req, res, next) => {
     .findFirst ({where: {RequestId: requestId}})
     .then (tripRequest => {
       //console.log ('userId, ', userProfile.UserId);
-     // console.log ('requestTargetId, ', tripRequest.RequestTargetId);
+      // console.log ('requestTargetId, ', tripRequest.RequestTargetId);
       if (tripRequest.RequestCreatorId !== userProfile.UserId) {
         res.status (401);
         res.send ('You are not authorized to reject this request');
@@ -350,8 +375,5 @@ TripRequestRouter.post ('/cancelRequest/:requestId', (req, res, next) => {
           });
       }
     });
-
-
-    
 });
 module.exports = TripRequestRouter;
