@@ -290,4 +290,68 @@ TripRequestRouter.get ('/getUserPendingReceivedRequests', (req, res, next) => {
       res.status (500).json ({error: error});
     });
 });
+
+TripRequestRouter.post ('/rejectRequest/:requestId', (req, res, next) => {
+  const userProfile = req.user.profile;
+  const requestId = Number.parseInt (req.params.requestId);
+  prisma.tripRequest
+    .findFirst ({where: {RequestId: requestId}})
+    .then (tripRequest => {
+      //console.log ('userId, ', userProfile.UserId);
+     // console.log ('requestTargetId, ', tripRequest.RequestTargetId);
+      if (tripRequest.RequestTargetId !== userProfile.UserId) {
+        res.status (401);
+        res.send ('You are not authorized to reject this request');
+      } else {
+        prisma.tripRequest
+          .update ({
+            where: {RequestId: tripRequest.RequestId},
+            data: {
+              TripStatusId: 4,
+            },
+          })
+          .then (prismaResult => {
+            res.status (200).json ({
+              message: 'reject request sucesfully',
+              result: prismaResult,
+            });
+          });
+      }
+    });
+
+
+
+});
+
+TripRequestRouter.post ('/cancelRequest/:requestId', (req, res, next) => {
+  const userProfile = req.user.profile;
+  const requestId = Number.parseInt (req.params.requestId);
+  prisma.tripRequest
+    .findFirst ({where: {RequestId: requestId}})
+    .then (tripRequest => {
+      //console.log ('userId, ', userProfile.UserId);
+     // console.log ('requestTargetId, ', tripRequest.RequestTargetId);
+      if (tripRequest.RequestCreatorId !== userProfile.UserId) {
+        res.status (401);
+        res.send ('You are not authorized to reject this request');
+      } else {
+        prisma.tripRequest
+          .update ({
+            where: {RequestId: tripRequest.RequestId},
+            data: {
+              TripStatusId: 6,
+            },
+          })
+          .then (prismaResult => {
+            res.status (200).json ({
+              message: 'cancel request sucesfully',
+              result: prismaResult,
+            });
+          });
+      }
+    });
+
+
+    
+});
 module.exports = TripRequestRouter;
