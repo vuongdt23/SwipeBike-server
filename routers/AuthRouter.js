@@ -6,6 +6,7 @@ const {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendEmailVerification
 } = require ('firebase/auth');
 const auth = getAuth (firebase);
 const firebaseAdmin = require ('firebase-admin');

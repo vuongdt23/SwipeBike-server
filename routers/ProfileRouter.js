@@ -1,53 +1,54 @@
-const express = require ('express');
-const ProfileRouter = express.Router ();
-const {PrismaClient} = require ('@prisma/client');
-const firebaseAdmin = require ('firebase-admin');
-const storageBucket = require ('../APIKeys/storageBucket');
-const multer = require ('multer');
-const {format} = require ('path/posix');
-const prisma = new PrismaClient ();
-const upload = multer ({
-  storage: multer.memoryStorage (),
+const express = require("express");
+const ProfileRouter = express.Router();
+const { PrismaClient } = require("@prisma/client");
+const firebaseAdmin = require("firebase-admin");
+const storageBucket = require("../APIKeys/storageBucket");
+const multer = require("multer");
+const { format } = require("path/posix");
+const prisma = new PrismaClient();
+const upload = multer({
+  storage: multer.memoryStorage(),
 });
+const { sendEmailVerification } = require("firebase/auth");
 
-ProfileRouter.get ('/view', (req, res, next) => {
+ProfileRouter.get("/view", (req, res, next) => {
   const user = req.user;
   prisma.user
-    .findFirst ({
+    .findFirst({
       where: {
         UserAccount: user.uid,
       },
     })
-    .then (response => {
-      response.verified = res.json (response);
+    .then((response) => {
+      response.verified = res.json(response);
     })
-    .catch (firebaseError => {
-      res.json ({
+    .catch((firebaseError) => {
+      res.json({
         error: firebaseError,
       });
     });
 });
-ProfileRouter.get ('/getProfileById/:userId', (req, res, next) => {
-  const userId = Number.parseInt (req.params.userId);
+ProfileRouter.get("/getProfileById/:userId", (req, res, next) => {
+  const userId = Number.parseInt(req.params.userId);
   prisma.user
-    .findFirst ({
+    .findFirst({
       where: {
         UserId: userId,
       },
     })
-    .then (response => {
-      res.json ({
+    .then((response) => {
+      res.json({
         profile: response,
       });
     })
-    .catch (err => {
-      res.status(500).json ({
+    .catch((err) => {
+      res.status(500).json({
         message: "something went wrong",
         error: err,
       });
     });
 });
-ProfileRouter.post ('/update', (req, res, next) => {
+ProfileRouter.post("/update", (req, res, next) => {
   const updateInfo = {
     UserFullName: req.body.UserFullName,
     UserPhone: req.body.UserPhone,
@@ -55,7 +56,7 @@ ProfileRouter.post ('/update', (req, res, next) => {
   };
   const user = req.user;
   prisma.user
-    .updateMany ({
+    .updateMany({
       where: {
         UserAccount: user.uid,
       },
@@ -65,18 +66,18 @@ ProfileRouter.post ('/update', (req, res, next) => {
         UserGender: updateInfo.UserGender,
       },
     })
-    .then (result => {
-      res.json (result);
+    .then((result) => {
+      res.json(result);
     })
-    .catch (error => {
+    .catch((error) => {
       res.statusCode = 500;
-      res.json ({
+      res.json({
         error: error,
       });
     });
 });
 
-ProfileRouter.post ('/setup', (req, res, next) => {
+ProfileRouter.post("/setup", (req, res, next) => {
   const updateInfo = {
     UserFullName: req.body.UserFullName,
     UserPhone: req.body.UserPhone,
@@ -84,67 +85,77 @@ ProfileRouter.post ('/setup', (req, res, next) => {
     UserDoB: req.body.UserDoB,
     IsSetUp: true,
   };
-  console.log ('update info', updateInfo);
+  console.log("update info", updateInfo);
   const user = req.user;
-  console.log (user);
+  console.log(user);
   prisma.user
-    .updateMany ({
+    .updateMany({
       where: {
         UserAccount: user.uid,
       },
       data: updateInfo,
     })
-    .then (result => {
-      res.json (result);
+    .then((result) => {
+      res.json(result);
     })
-    .catch (error => {
+    .catch((error) => {
       res.statusCode = 500;
-      console.log ('profile setup error', error);
-      res.json ({
+      console.log("profile setup error", error);
+      res.json({
         error: error,
       });
     });
 });
 
-ProfileRouter.post ('/updatePic', upload.single ('file'), (req, res, next) => {
+ProfileRouter.post("/updatePic", upload.single("file"), (req, res, next) => {
   if (!req.file) {
-    res.status (400).send ('Error: No files found');
+    res.status(400).send("Error: No files found");
   }
 
   const user = req.user;
-  const time = new Date ().toISOString ();
+  const time = new Date().toISOString();
 
   // console.log("file ", req.file);
-  const fileName = 'user_' + user.profile.UserId + '_pic_' + time;
-  const blob = firebaseAdmin.storage ().bucket ().file (fileName);
-  const blobWriter = blob.createWriteStream ({
+  const fileName = "user_" + user.profile.UserId + "_pic_" + time;
+  const blob = firebaseAdmin.storage().bucket().file(fileName);
+  const blobWriter = blob.createWriteStream({
     metadata: {
       contentType: req.file.mimetype,
     },
   });
-  blobWriter.on ('error', err => {
-    console.log ('error blobwrite', err);
+  blobWriter.on("error", (err) => {
+    console.log("error blobwrite", err);
   });
-  blobWriter.on ('finish', () => {
-    blob.makePublic ().then (() => {
-      console.log (blob.publicUrl ());
+  blobWriter.on("finish", () => {
+    blob.makePublic().then(() => {
+      console.log(blob.publicUrl());
       prisma.user
-        .updateMany ({
-          where: {UserAccount: user.uid},
+        .updateMany({
+          where: { UserAccount: user.uid },
           data: {
-            UserProfilePic: blob.publicUrl (),
+            UserProfilePic: blob.publicUrl(),
           },
         })
-        .then (result => {
-          console.log ('users changed', result.count);
-          res.status (200);
-          res.json ({
-            message: 'Profile pic updated',
+        .then((result) => {
+          console.log("users changed", result.count);
+          res.status(200);
+          res.json({
+            message: "Profile pic updated",
           });
         });
     });
   });
-  blobWriter.end (req.file.buffer);
+  blobWriter.end(req.file.buffer);
+});
+
+ProfileRouter.post("/verifyEmail", (req, res, next) => {
+  console.log(req.user);
+  if (!req.user.email_verified) {
+    res.status(200).send("this account email is already verified");
+    return;
+  } else {
+  
+  }
 });
 
 module.exports = ProfileRouter;

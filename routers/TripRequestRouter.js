@@ -75,7 +75,11 @@ TripRequestRouter.post("/sendRequest", (req, res, next) => {
                     });
                     console.log(tokenArr);
                     //FCM
-                    NotifyOfRequestCreation(tokenArr);
+                    NotifyOfRequestCreation(
+                      tokenArr,
+                      req.user.profile.UserFullName,
+                      req.user.profile.UserProfilePic
+                    );
                     prisma.userNotification
                       .create({
                         data: {
@@ -86,9 +90,9 @@ TripRequestRouter.post("/sendRequest", (req, res, next) => {
                           NotificationCreatorId: MyTrip.CreatorId,
                           NotificationCreateTime: moment().toISOString(),
                           UserNotificationContent:
-                            MyTrip.CandidateTripCreator.UserFullName +
-                            " muốn ghép chuyến đi với bạn",
+                            " muốn ghép đôi chuyến đi với bạn",
                           UserNotificationTitle: "Lời mời ghép đôi mới",
+                          notificationTypeNotificationTypeId: 1,
                         },
                       })
                       .then((NotiCreateResult) => {
