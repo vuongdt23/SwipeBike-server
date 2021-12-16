@@ -5,7 +5,7 @@ const NotifyOfRequestCreation = (tokens, requesterName, requesterImgUrl) => {
   firebaseAdmin.messaging ().sendMulticast ({
     tokens,
     notification: {
-      body: requesterName + 'muốn ghép đôi với bạn',
+      body: requesterName + ' muốn ghép đôi với bạn',
       title: 'Lời mời ghép đôi mới',
       imageUrl: requesterImgUrl,
     },
@@ -21,7 +21,7 @@ const NotifyOfRequestRejection = (
   firebaseAdmin.messaging ().sendMulticast ({
     tokens,
     notification: {
-      body: requestRejectorName + 'đã từ chối yêu cầu ghép đôi với bạn',
+      body: requestRejectorName + ' đã từ chối yêu cầu ghép đôi với bạn',
       title: 'Lời mời ghép đôi bị từ chối',
       imageUrl: requestRejectorImgUrl,
     },
@@ -53,8 +53,8 @@ const NotifyofRequestAcceptance = (
   firebaseAdmin.messaging ().sendMulticast ({
     tokens,
     notification: {
-      body: requestAcceptorName + 'đã chấp nhận yêu cầu ghép đôi với bạn',
-      title: 'Yêu cầu ghép đôi được tạo',
+      body: requestAcceptorName + ' đã chấp nhận yêu cầu ghép đôi với bạn',
+      title: 'Yêu cầu ghép đôi được chấp nhận',
       imageUrl: requestAcceptorImgUrl,
     },
   });

@@ -1,29 +1,30 @@
-const express = require ('express');
-const TripRequestRouter = express.Router ();
-const {PrismaClient} = require ('@prisma/client');
-const prisma = new PrismaClient ();
-const moment = require ('moment');
+const express = require("express");
+const TripRequestRouter = express.Router();
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+const moment = require("moment");
 const {
   NotifyOfRequestCreation,
   NotifyOfRequestRejection,
   NotifyOfRequestCancel,
   NotifyofRequestAcceptance,
-} = require ('../FCMOperations/TripRequest');
-const {getFCMTokensByUserId} = require ('../FCMOperations/TokenStore');
-TripRequestRouter.post ('/RouteRecommendation', (req, res, next) => {
+} = require("../FCMOperations/TripRequest");
+const { getFCMTokensByUserId } = require("../FCMOperations/TokenStore");
+const { isMoment } = require("moment");
+TripRequestRouter.post("/RouteRecommendation", (req, res, next) => {
   const user = req.user;
 
   const myTripId = req.body.MyTripId;
   const theirTripId = req.body.TheirTripId;
 });
 
-TripRequestRouter.post ('/sendRequest', (req, res, next) => {
+TripRequestRouter.post("/sendRequest", (req, res, next) => {
   const user = req.user;
 
   const myTripId = req.body.MyTripId;
   const theirTripId = req.body.TheirTripId;
   prisma.candidateTrip
-    .findFirst ({
+    .findFirst({
       where: {
         CandidateTripId: myTripId,
       },
@@ -31,9 +32,9 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
         CandidateTripCreator: true,
       },
     })
-    .then (MyTrip => {
+    .then((MyTrip) => {
       prisma.candidateTrip
-        .findFirst ({
+        .findFirst({
           where: {
             CandidateTripId: theirTripId,
           },
@@ -41,10 +42,10 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
             CandidateTripCreator: true,
           },
         })
-        .then (TheirTrip => {
+        .then((TheirTrip) => {
           if (MyTrip.CandidateTripBike) {
             prisma.tripRequest
-              .create ({
+              .create({
                 data: {
                   RequestCreatorId: MyTrip.CreatorId,
                   CreatorBike: true,
@@ -60,63 +61,62 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
                   PassengerToAddress: TheirTrip.CandidateTripToAddress,
                   PassengerToLat: TheirTrip.CandidateTripToLat,
                   PassengerToLong: TheirTrip.CandidateTripToLong,
-                  RequestCreateTime: moment ().toISOString (),
+                  RequestCreateTime: moment().toISOString(),
                   RequestTargetId: TheirTrip.CreatorId,
                   TripStatusId: 5,
                 },
               })
-              .then (prismaResult => {
-                getFCMTokensByUserId (
-                  TheirTrip.CandidateTripCreator.UserAccount
-                )
-                  .then (firestoreResult => {
+              .then((prismaResult) => {
+                getFCMTokensByUserId(TheirTrip.CandidateTripCreator.UserAccount)
+                  .then((firestoreResult) => {
                     let tokenArr = [];
-                    firestoreResult.forEach (doc => {
-                      tokenArr.push (doc.data ().token);
+                    firestoreResult.forEach((doc) => {
+                      tokenArr.push(doc.data().token);
                     });
-                    console.log (tokenArr);
+                    console.log(tokenArr);
                     //FCM
-                    NotifyOfRequestCreation (tokenArr);
+                    NotifyOfRequestCreation(tokenArr);
                     prisma.userNotification
-                      .create ({
+                      .create({
                         data: {
-                          CreatorImage: MyTrip.CandidateTripCreator
-                            .UserProfilePic,
+                          CreatorImage:
+                            MyTrip.CandidateTripCreator.UserProfilePic,
                           NotificationRead: false,
                           NotificationTargetId: TheirTrip.CreatorId,
                           NotificationCreatorId: MyTrip.CreatorId,
-                          NotificationCreateTime: moment ().toISOString (),
-                          UserNotificationContent: MyTrip.CandidateTripCreator
-                            .UserFullName + ' muốn ghép chuyến đi với bạn',
-                          UserNotificationTitle: 'Lời mời ghép đôi mới',
+                          NotificationCreateTime: moment().toISOString(),
+                          UserNotificationContent:
+                            MyTrip.CandidateTripCreator.UserFullName +
+                            " muốn ghép chuyến đi với bạn",
+                          UserNotificationTitle: "Lời mời ghép đôi mới",
                         },
                       })
-                      .then (NotiCreateResult => {
-                        res.status (200).json (NotiCreateResult);
+                      .then((NotiCreateResult) => {
+                        res.status(200).json(NotiCreateResult);
                       })
-                      .catch (error => {
-                        res.status (500);
-                        res.json ({
+                      .catch((error) => {
+                        res.status(500);
+                        res.json({
                           error: error,
                         });
                       });
                   })
-                  .catch (error => {
-                    res.status (500);
-                    res.json ({
+                  .catch((error) => {
+                    res.status(500);
+                    res.json({
                       error: error,
                     });
                   });
               })
-              .catch (error => {
-                res.status (500);
-                res.json ({
+              .catch((error) => {
+                res.status(500);
+                res.json({
                   error: error,
                 });
               });
           } else {
             prisma.tripRequest
-              .create ({
+              .create({
                 data: {
                   CreatorBike: false,
                   RequestCreatorId: MyTrip.CreatorId,
@@ -134,93 +134,95 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
                   PassengerToLong: MyTrip.CandidateTripToLong,
                   RequestTargetId: TheirTrip.CreatorId,
                   TripStatusId: 5,
-                  RequestCreateTime: moment ().toISOString (),
+                  RequestCreateTime: moment().toISOString(),
                 },
               })
-              .then (prismaResult => {
-                getTokensByUserId (
+              .then((prismaResult) => {
+                getTokensByUserId(
                   TheirTrip.CandidateTripCreator.UserAccount
-                ).then (firestoreResult => {
+                ).then((firestoreResult) => {
                   let tokenArr = [];
-                  firestoreResult.forEach (doc => {
-                    tokenArr.push (doc.data ().token);
+                  firestoreResult.forEach((doc) => {
+                    tokenArr.push(doc.data().token);
                   });
-                  console.log (tokenArr);
+                  console.log(tokenArr);
 
                   //FCM
-                  NotifyOfRequestCreation (tokenArr);
+                  NotifyOfRequestCreation(tokenArr);
 
                   prisma.userNotification
-                    .create ({
+                    .create({
                       data: {
-                        CreatorImage: MyTrip.CandidateTripCreator
-                          .UserProfilePic,
+                        CreatorImage:
+                          MyTrip.CandidateTripCreator.UserProfilePic,
                         NotificationRead: false,
                         NotificationTargetId: TheirTrip.CreatorId,
                         NotificationCreatorId: MyTrip.CreatorId,
-                        NotificationCreateTime: moment ().toISOString (),
-                        UserNotificationContent: MyTrip.CandidateTripCreator
-                          .UserFullName + ' muốn ghép chuyến đi với bạn',
-                        UserNotificationTitle: 'Lời mời ghép đôi mới',
+                        NotificationCreateTime: moment().toISOString(),
+                        UserNotificationContent:
+                          MyTrip.CandidateTripCreator.UserFullName +
+                          " muốn ghép chuyến đi với bạn",
+                        UserNotificationTitle: "Lời mời ghép đôi mới",
                         NotificationType: 1,
                       },
                     })
-                    .then (NotiCreateResult => {
-                      res.status (200).json (NotiCreateResult);
+                    .then((NotiCreateResult) => {
+                      res.status(200).json(NotiCreateResult);
                     })
-                    .catch (error => {
-                      res.status (500);
-                      res.json ({
+                    .catch((error) => {
+                      res.status(500);
+                      res.json({
                         error: error,
                       });
                     });
                 });
               })
-              .catch (error => {
-                res.status (500);
-                res.json ({
+              .catch((error) => {
+                res.status(500);
+                res.json({
                   error: error,
                 });
               });
           }
         });
     })
-    .catch (error => {
-      res.status (500);
-      console.log (err);
-      res.json ({
+    .catch((error) => {
+      res.status(500);
+      console.log(err);
+      res.json({
         err: error,
       });
     })
-    .catch (error => {
-      res.status (500);
-      console.log (err);
-      res.json ({
+    .catch((error) => {
+      res.status(500);
+      console.log(err);
+      res.json({
         err: error,
       });
     });
 });
 
-TripRequestRouter.post ('/acceptRequest/:requestId', (req, res, next) => {
-  const userId = Number.parseInt (req.user.profile.UserId);
-  const requestId = Number.parseInt (req.params.requestId);
+TripRequestRouter.post("/acceptRequest/:requestId", (req, res, next) => {
+  const userId = Number.parseInt(req.user.profile.UserId);
+  const requestId = Number.parseInt(req.params.requestId);
   prisma.tripRequest
-    .findFirst ({where: {RequestId: requestId}})
-    .then (TripRequest => {
+    .findFirst({ where: { RequestId: requestId } })
+    .then((TripRequest) => {
       if (TripRequest.RequestTargetId !== userId) {
-        res.status (401);
-        res.send ('You are not authorized to accept this request');
+        res.status(401);
+        res.send("You are not authorized to accept this request");
+        return;
       } else {
         prisma.tripRequest
-          .update ({
-            where: {RequestId: TripRequest.RequestId},
+          .update({
+            where: { RequestId: TripRequest.RequestId },
             data: {
               TripStatusId: 2,
             },
           })
-          .then (updateResult => {
+          .then((updateResult) => {
             prisma.trip
-              .create ({
+              .create({
                 data: {
                   TripStartTime: null,
                   DriverFromAddress: TripRequest.DriverFromAddress,
@@ -230,7 +232,7 @@ TripRequestRouter.post ('/acceptRequest/:requestId', (req, res, next) => {
                   DriverToLat: TripRequest.DriverToLat,
                   DriverToLong: TripRequest.DriverToLong,
                   CreatorBike: TripRequest.CreatorBike,
-                  TripCreatedTime: moment ().toISOString (),
+                  TripCreatedTime: moment().toISOString(),
                   PassengerFromAddress: TripRequest.PassengerFromAddress,
                   PassengerFromLat: TripRequest.PassengerFromLat,
                   PassengerFromLong: TripRequest.PassengerFromLong,
@@ -243,39 +245,70 @@ TripRequestRouter.post ('/acceptRequest/:requestId', (req, res, next) => {
                   TripPassengerId: TripRequest.CreatorBike
                     ? TripRequest.RequestTargetId
                     : TripRequest.RequestCreatorId,
-                  FromRequest: req.params.requestId,
+                  FromRequest: TripRequest.RequestId,
                 },
               })
-              .then (createTripResult => {
-                res.status (200).json ({
-                  message: 'accept request sucessfully',
+              .then((createTripResult) => {
+                prisma.user
+                  .findFirst({
+                    where: {
+                      UserId: TripRequest.RequestCreatorId,
+                    },
+                  })
+                  .then((pushNotireciever) => {
+                    getFCMTokensByUserId(pushNotireciever.UserAccount).then(
+                      (FCMtokens) => {
+                        const tokens = [];
+                        FCMtokens.forEach((doc) =>
+                          tokens.push(doc.data().token)
+                        );
+                        console.log("sending push notis to devices ", tokens);
+                        NotifyofRequestAcceptance(
+                          tokens,
+                          req.user.profile.UserFullName,
+                          req.user.profile.UserProfilePic
+                        );
+
+                        prisma.userNotification.create({
+                          data: {
+                            NotificationCreateTime: moment().toISOString(),
+                            NotificationCreatorId: req.user.profile.UserId,
+                            NotificationRead: false,
+                            NotificationTargetId: pushNotireciever.UserId,
+                            UserNotificationContent:
+                              "đã chấp nhận ghép đôi chuyến đi",
+                            UserNotificationTitle: "Yêu cầu được chấp nhận",
+                            notificationTypeNotificationTypeId: 2,
+                          },
+                        });
+                      }
+                    );
+                  });
+                res.status(200).json({
+                  message: "accept request sucessfully",
                   trip: createTripResult,
                 });
               });
 
-
-              //FCM Stuff in Background
-getFCMTokensByUserId(TripRequest.RequestCreator)
-
-
+            //FCM Stuff in Background
           })
-          .catch (error => {
-            res.status (500).json ({error: error});
+          .catch((error) => {
+            res.status(500).json({ error: error });
           });
       }
     })
-    .catch (error => {
-      res.status (500).json ({error: error});
+    .catch((error) => {
+      res.status(500).json({ error: error });
     });
 });
 
-TripRequestRouter.get ('/getUserPendingSentRequests', (req, res, next) => {
+TripRequestRouter.get("/getUserPendingSentRequests", (req, res, next) => {
   const user = req.user.profile;
 
   prisma.tripRequest
-    .findMany ({
+    .findMany({
       where: {
-        RequestCreatorId: Number.parseInt (user.UserId),
+        RequestCreatorId: Number.parseInt(user.UserId),
         TripStatusId: 5,
       },
       include: {
@@ -293,19 +326,19 @@ TripRequestRouter.get ('/getUserPendingSentRequests', (req, res, next) => {
         },
       },
     })
-    .then (result => {
-      res.status (200).json ({
+    .then((result) => {
+      res.status(200).json({
         requests: result,
       });
     });
 });
-TripRequestRouter.get ('/getUserPendingReceivedRequests', (req, res, next) => {
+TripRequestRouter.get("/getUserPendingReceivedRequests", (req, res, next) => {
   const user = req.user.profile;
 
   prisma.tripRequest
-    .findMany ({
+    .findMany({
       where: {
-        RequestTargetId: Number.parseInt (user.UserId),
+        RequestTargetId: Number.parseInt(user.UserId),
         TripStatusId: 5,
       },
       include: {
@@ -323,38 +356,67 @@ TripRequestRouter.get ('/getUserPendingReceivedRequests', (req, res, next) => {
         },
       },
     })
-    .then (result => {
-      res.status (200).json ({
+    .then((result) => {
+      res.status(200).json({
         requests: result,
       });
     })
-    .catch (error => {
-      res.status (500).json ({error: error});
+    .catch((error) => {
+      res.status(500).json({ error: error });
     });
 });
 
-TripRequestRouter.post ('/rejectRequest/:requestId', (req, res, next) => {
+TripRequestRouter.post("/rejectRequest/:requestId", (req, res, next) => {
   const userProfile = req.user.profile;
-  const requestId = Number.parseInt (req.params.requestId);
+  const requestId = Number.parseInt(req.params.requestId);
   prisma.tripRequest
-    .findFirst ({where: {RequestId: requestId}})
-    .then (tripRequest => {
+    .findFirst({ where: { RequestId: requestId } })
+    .then((tripRequest) => {
       //console.log ('userId, ', userProfile.UserId);
       // console.log ('requestTargetId, ', tripRequest.RequestTargetId);
       if (tripRequest.RequestTargetId !== userProfile.UserId) {
-        res.status (401);
-        res.send ('You are not authorized to reject this request');
+        res.status(401);
+        res.send("You are not authorized to reject this request");
       } else {
         prisma.tripRequest
-          .update ({
-            where: {RequestId: tripRequest.RequestId},
+          .update({
+            where: { RequestId: tripRequest.RequestId },
             data: {
               TripStatusId: 4,
             },
           })
-          .then (prismaResult => {
-            res.status (200).json ({
-              message: 'reject request sucesfully',
+          .then((prismaResult) => {
+            //Handling Notifications
+            prisma.user
+              .findFirst({ where: { UserId: tripRequest.RequestCreatorId } })
+              .then((pushNotireciever) => {
+                getFCMTokensByUserId(pushNotireciever.UserAccount).then(
+                  (FCMtokens) => {
+                    const tokens = [];
+                    FCMtokens.forEach((doc) => tokens.push(doc.data().token));
+                    console.log("sending push notis to devices ", tokens);
+                    NotifyOfRequestRejection(
+                      tokens,
+                      req.user.profile.UserFullName,
+                      req.user.profile.UserProfilePic
+                    );
+                  }
+                );
+                prisma.userNotification.create({
+                  data: {
+                    NotificationCreateTime: moment().toISOString(),
+                    NotificationCreatorId: req.user.profile.UserId,
+                    NotificationRead: false,
+                    NotificationTargetId: pushNotireciever.UserId,
+                    UserNotificationContent: "đã từ chối yêu cầu đôi chuyến đi",
+                    UserNotificationTitle: "Yêu cầu bị từ chối",
+                    notificationTypeNotificationTypeId: 3,
+                  },
+                });
+              });
+
+            res.status(200).json({
+              message: "reject request sucesfully",
               result: prismaResult,
             });
           });
@@ -362,70 +424,75 @@ TripRequestRouter.post ('/rejectRequest/:requestId', (req, res, next) => {
     });
 });
 
-TripRequestRouter.post ('/cancelRequest/:requestId', (req, res, next) => {
+TripRequestRouter.post("/cancelRequest/:requestId", (req, res, next) => {
   const userProfile = req.user.profile;
-  const requestId = Number.parseInt (req.params.requestId);
+  const requestId = Number.parseInt(req.params.requestId);
   prisma.tripRequest
-    .findFirst ({where: {RequestId: requestId}})
-    .then (tripRequest => {
-      //console.log ('userId, ', userProfile.UserId);
-      // console.log ('requestTargetId, ', tripRequest.RequestTargetId);
+    .findFirst({ where: { RequestId: requestId } })
+    .then((tripRequest) => {
+      console.log("userId, ", userProfile.UserId);
+      console.log("requestCreatorId, ", tripRequest.RequestCreatorId);
       if (tripRequest.RequestCreatorId !== userProfile.UserId) {
-        res.status (401);
-        res.send ('You are not authorized to cancel this request');
+        res.status(401);
+        res.send("You are not authorized to cancel this request");
       } else {
         prisma.tripRequest
-          .update ({
-            where: {RequestId: tripRequest.RequestId},
+          .update({
+            where: { RequestId: tripRequest.RequestId },
             data: {
               TripStatusId: 6,
             },
           })
-          .then (prismaResult => {
+          .then((prismaResult) => {
             prisma.user
-              .findFirst ({
-                where: {UserId: tripRequest.RequestTargetId},
+              .findFirst({
+                where: { UserId: tripRequest.RequestTargetId },
               })
-              .then (NotificationTargetResult => {
-                getFCMTokensByUserId (
-                  NotificationTargetResult.UserId
-                ).then (tokens => {
-                  NotifyOfRequestCancel (
-                    tokens,
-                    userProfile.UserFullName,
-                    userProfile.UserProfilePic
-                  );
-                });
+              .then((NotificationTargetResult) => {
+                getFCMTokensByUserId(NotificationTargetResult.UserAccount).then(
+                  (FCMTokens) => {
+                    const tokens = [];
+
+                    FCMTokens.forEach((doc) => tokens.push(doc.data().token));
+
+                    console.log("sending push notis to devices ", tokens);
+                    NotifyOfRequestCancel(
+                      tokens,
+                      userProfile.UserFullName,
+                      userProfile.UserProfilePic
+                    );
+                  }
+                );
 
                 prisma.userNotification
-                  .create ({
+                  .create({
                     data: {
                       NotificationRead: false,
-                      NotificationCreateTime: moment ().toISOString (),
-                      NotificationType: 4,
+                      NotificationCreateTime: moment().toISOString(),
+                      notificationTypeNotificationTypeId: 4,
                       CreatorImage: userProfile.UserProfilePic,
-                      UserNotificationTitle: 'Yêu cầu ghép đôi bị hủy',
-                      UserNotificationContent: 'Yêu cầu ghép đôi bị hủy',
+                      UserNotificationTitle: "Yêu cầu ghép đôi bị hủy",
+                      UserNotificationContent: "Yêu cầu ghép đôi bị hủy",
                       NotificationTargetId: NotificationTargetResult.UserId,
                       NotificationCreatorId: userProfile.UserId,
                     },
                   })
-                  .catch (err => {
-                    console.log (err);
+                  .catch((err) => {
+                    console.log(err);
                   });
               })
-              .catch (err => {
-                console.log (err);
+              .catch((err) => {
+                console.log(err);
               });
-            res.status (200).json ({
-              message: 'cancel request sucesfully',
+            res.status(200).json({
+              message: "cancel request sucesfully",
               result: prismaResult,
             });
           });
       }
     })
-    .catch (err => {
-      res.status (500);
+    .catch((err) => {
+      res.status(500);
     });
 });
 module.exports = TripRequestRouter;
