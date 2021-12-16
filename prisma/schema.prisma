@@ -91,6 +91,7 @@ model TripRequest {
   DriverToLat       Float?
   DriverToLong      Float?
 
+
   PassengerFromLat     Float?
   PassengerFromLong    Float?
   PassengerFromAddress String?
@@ -98,6 +99,8 @@ model TripRequest {
   PassengerToLat       Float?
   PassengerToLong      Float?
 
+  CandidateTripFrom Int?
+  CandidateTripSent Int?
   RequestCreateTime String?
   TripTime          String?
 
@@ -117,8 +120,8 @@ model Trip {
   TripDriver      User?    @relation("TripDriver", fields: [TripDriverId], references: [UserId])
   TripPassenger   User?    @relation("TripPassenger", fields: [TripPassengerId], references: [UserId])
   CreatorBike     Boolean?
-  TripDriverId    Int
-  TripPassengerId Int
+  TripDriverId    Int?
+  TripPassengerId Int?
 
 
   DriverFromLat     Float?
@@ -135,7 +138,7 @@ model Trip {
   PassengerToLat       Float?
   PassengerToLong      Float?
 
-
+  FromRequest Int?
   TripCreatedTime String?
   TripStartTime   String?
   @@map("trips")
@@ -144,15 +147,17 @@ model Trip {
 model UserNotification {
   NotificationId Int @id @default(autoincrement())
 
-  UserNotificationTitle   String?
-  UserNotificationContent String?
-  NotificationTarget      User?    @relation("NotificationReceived", fields: [NotificationTargetId], references: [UserId])
-  NotificationCreator     User?    @relation("NotificationCreated", fields: [NotificationCreatorId], references: [UserId])
-  CreatorImage            String?
-  NotificationCreateTime  String?
-  NotificationCreatorId   Int?
-  NotificationTargetId    Int?
-  NotificationRead        Boolean?
+  UserNotificationTitle              String?
+  UserNotificationContent            String?
+  NotificationTarget                 User?             @relation("NotificationReceived", fields: [NotificationTargetId], references: [UserId])
+  NotificationCreator                User?             @relation("NotificationCreated", fields: [NotificationCreatorId], references: [UserId])
+  CreatorImage                       String?
+  NotificationCreateTime             String?
+  NotificationCreatorId              Int?
+  NotificationTargetId               Int?
+  NotificationRead                   Boolean?
+  NotificationType                   NotificationType? @relation(fields: [notificationTypeNotificationTypeId], references: [NotificationTypeId])
+  notificationTypeNotificationTypeId Int?
   @@map("usernotifications")
 }
 
@@ -173,4 +178,12 @@ model UserMessage {
 
   AuthorId       Int
   ConversationID Int
+}
+
+model NotificationType {
+  NotificationTypeId          Int                @id @default(autoincrement())
+  NotificationTypeName        String
+  NotificationTypeDescription String
+  Notifications               UserNotification[]
+
 }

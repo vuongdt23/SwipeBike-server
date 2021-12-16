@@ -3,8 +3,13 @@ const TripRequestRouter = express.Router ();
 const {PrismaClient} = require ('@prisma/client');
 const prisma = new PrismaClient ();
 const moment = require ('moment');
-const {NotifyOfRequestCreation} = require ('../FCMOperations/TripRequest');
-const {getTokensByUserId} = require ('../FCMOperations/TokenStore');
+const {
+  NotifyOfRequestCreation,
+  NotifyOfRequestRejection,
+  NotifyOfRequestCancel,
+  NotifyofRequestAcceptance,
+} = require ('../FCMOperations/TripRequest');
+const {getFCMTokensByUserId} = require ('../FCMOperations/TokenStore');
 TripRequestRouter.post ('/RouteRecommendation', (req, res, next) => {
   const user = req.user;
 
@@ -61,7 +66,9 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
                 },
               })
               .then (prismaResult => {
-                getTokensByUserId (TheirTrip.CandidateTripCreator.UserAccount)
+                getFCMTokensByUserId (
+                  TheirTrip.CandidateTripCreator.UserAccount
+                )
                   .then (firestoreResult => {
                     let tokenArr = [];
                     firestoreResult.forEach (doc => {
@@ -139,6 +146,7 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
                     tokenArr.push (doc.data ().token);
                   });
                   console.log (tokenArr);
+
                   //FCM
                   NotifyOfRequestCreation (tokenArr);
 
@@ -154,6 +162,7 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
                         UserNotificationContent: MyTrip.CandidateTripCreator
                           .UserFullName + ' muốn ghép chuyến đi với bạn',
                         UserNotificationTitle: 'Lời mời ghép đôi mới',
+                        NotificationType: 1,
                       },
                     })
                     .then (NotiCreateResult => {
@@ -213,7 +222,7 @@ TripRequestRouter.post ('/acceptRequest/:requestId', (req, res, next) => {
             prisma.trip
               .create ({
                 data: {
-                  TripTime: TripRequest.TripTime,
+                  TripStartTime: null,
                   DriverFromAddress: TripRequest.DriverFromAddress,
                   DriverFromLat: TripRequest.DriverFromLat,
                   DriverFromLong: TripRequest.DriverFromLong,
@@ -231,19 +240,24 @@ TripRequestRouter.post ('/acceptRequest/:requestId', (req, res, next) => {
                   TripDriverId: TripRequest.CreatorBike
                     ? TripRequest.RequestCreatorId
                     : TripRequest.RequestTargetId,
+                  TripPassengerId: TripRequest.CreatorBike
+                    ? TripRequest.RequestTargetId
+                    : TripRequest.RequestCreatorId,
+                  FromRequest: req.params.requestId,
                 },
               })
               .then (createTripResult => {
-                res
-                  .status (200)
-                  .json ({
-                    message: 'accept request sucessfully',
-                    trip: createTripResult,
-                  })
-                  .catch (error => {
-                    res.status (500).json ({error: error});
-                  });
+                res.status (200).json ({
+                  message: 'accept request sucessfully',
+                  trip: createTripResult,
+                });
               });
+
+
+              //FCM Stuff in Background
+getFCMTokensByUserId(TripRequest.RequestCreator)
+
+
           })
           .catch (error => {
             res.status (500).json ({error: error});
@@ -358,7 +372,7 @@ TripRequestRouter.post ('/cancelRequest/:requestId', (req, res, next) => {
       // console.log ('requestTargetId, ', tripRequest.RequestTargetId);
       if (tripRequest.RequestCreatorId !== userProfile.UserId) {
         res.status (401);
-        res.send ('You are not authorized to reject this request');
+        res.send ('You are not authorized to cancel this request');
       } else {
         prisma.tripRequest
           .update ({
@@ -368,12 +382,50 @@ TripRequestRouter.post ('/cancelRequest/:requestId', (req, res, next) => {
             },
           })
           .then (prismaResult => {
+            prisma.user
+              .findFirst ({
+                where: {UserId: tripRequest.RequestTargetId},
+              })
+              .then (NotificationTargetResult => {
+                getFCMTokensByUserId (
+                  NotificationTargetResult.UserId
+                ).then (tokens => {
+                  NotifyOfRequestCancel (
+                    tokens,
+                    userProfile.UserFullName,
+                    userProfile.UserProfilePic
+                  );
+                });
+
+                prisma.userNotification
+                  .create ({
+                    data: {
+                      NotificationRead: false,
+                      NotificationCreateTime: moment ().toISOString (),
+                      NotificationType: 4,
+                      CreatorImage: userProfile.UserProfilePic,
+                      UserNotificationTitle: 'Yêu cầu ghép đôi bị hủy',
+                      UserNotificationContent: 'Yêu cầu ghép đôi bị hủy',
+                      NotificationTargetId: NotificationTargetResult.UserId,
+                      NotificationCreatorId: userProfile.UserId,
+                    },
+                  })
+                  .catch (err => {
+                    console.log (err);
+                  });
+              })
+              .catch (err => {
+                console.log (err);
+              });
             res.status (200).json ({
               message: 'cancel request sucesfully',
               result: prismaResult,
             });
           });
       }
+    })
+    .catch (err => {
+      res.status (500);
     });
 });
 module.exports = TripRequestRouter;

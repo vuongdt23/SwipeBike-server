@@ -1,16 +1,69 @@
 const firebaseAdmin = require ('firebase-admin');
 
-const NotifyOfRequestCreation = tokens => {
+const NotifyOfRequestCreation = (tokens, requesterName, requesterImgUrl) => {
+  if (tokens.length === 0) return;
   firebaseAdmin.messaging ().sendMulticast ({
     tokens,
     notification: {
-      body: 'dummy',
-      title: 'dummy',
-      imageUrl: 'https://firebasestorage.googleapis.com/v0/b/swipebike-38736.appspot.com/o/user_3_pic_2021-11-16T19%3A12%3A56.101Z?alt=media&token=95bc0f3f-ccca-47dc-9e22-7e70636fb75e',
+      body: requesterName + 'muốn ghép đôi với bạn',
+      title: 'Lời mời ghép đôi mới',
+      imageUrl: requesterImgUrl,
     },
   });
 };
 
+const NotifyOfRequestRejection = (
+  tokens,
+  requestRejectorName,
+  requestRejectorImgUrl
+) => {
+  if (tokens.length === 0) return;
+  firebaseAdmin.messaging ().sendMulticast ({
+    tokens,
+    notification: {
+      body: requestRejectorName + 'đã từ chối yêu cầu ghép đôi với bạn',
+      title: 'Lời mời ghép đôi bị từ chối',
+      imageUrl: requestRejectorImgUrl,
+    },
+  });
+};
+
+const NotifyOfRequestCancel = (
+  tokens,
+  requestRejectorName,
+  requestRejectorImgUrl
+) => {
+  if (tokens.length === 0) return;
+  firebaseAdmin.messaging ().sendMulticast ({
+    tokens,
+    notification: {
+      body: requestRejectorName + 'đã hủy yêu cầu ghép đôi với bạn',
+      title: 'Lời mời ghép đôi bị hủy',
+      imageUrl: requestRejectorImgUrl,
+    },
+  });
+};
+
+const NotifyofRequestAcceptance = (
+  tokens,
+  requestAcceptorName,
+  requestAcceptorImgUrl
+) => {
+  if (tokens.length === 0) return;
+  firebaseAdmin.messaging ().sendMulticast ({
+    tokens,
+    notification: {
+      body: requestAcceptorName + 'đã chấp nhận yêu cầu ghép đôi với bạn',
+      title: 'Yêu cầu ghép đôi được tạo',
+      imageUrl: requestAcceptorImgUrl,
+    },
+  });
+
+};
+
 module.exports = {
   NotifyOfRequestCreation: NotifyOfRequestCreation,
+  NotifyOfRequestRejection: NotifyOfRequestRejection,
+  NotifyOfRequestCancel: NotifyOfRequestCancel,
+  NotifyofRequestAcceptance: NotifyofRequestAcceptance
 };

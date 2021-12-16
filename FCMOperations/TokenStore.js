@@ -13,7 +13,7 @@ const saveTokenToStore = (token, userId) => {
   return collectionRef.doc (token).set (docData);
 };
 
-const getTokensByUserId = userId => {
+const getFCMTokensByUserId = userId => {
   const collectionRef = firebaseAdmin.firestore ().collection ('FCM_TOKENS');
 
   return collectionRef.where ('userId', '==', userId).get ();
@@ -21,5 +21,5 @@ const getTokensByUserId = userId => {
 
 module.exports = {
   saveTokenToStore: saveTokenToStore,
-  getTokensByUserId: getTokensByUserId,
+  getFCMTokensByUserId: getFCMTokensByUserId,
 };
