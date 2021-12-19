@@ -19,6 +19,20 @@ TripRouter.get ('/getMyTrips', (req, res, next) => {
           },
         ],
       },
+      include: {
+        TripDriver: {
+          select: {
+            UserProfilePic: true,
+            UserFullName: true,
+          },
+        },
+        TripPassenger: {
+          select: {
+            UserProfilePic: true,
+            UserFullName: true,
+          },
+        },
+      },
     })
     .then (tripList => {
       res.json ({
