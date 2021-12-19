@@ -9,17 +9,15 @@ TripRouter.get ('/getMyTrips', (req, res, next) => {
   console.log ('user requested trips', user.UserId);
   prisma.trip
     .findMany ({
-    
       where: {
-        OR:[{
-          TripDriverId: Number.parseInt(user.UserId),
-
-        },
-      {
-        TripPassengerId: Number.parseInt(user.UserId),
-      }]
-        
-        
+        OR: [
+          {
+            TripDriverId: Number.parseInt (user.UserId),
+          },
+          {
+            TripPassengerId: Number.parseInt (user.UserId),
+          },
+        ],
       },
     })
     .then (tripList => {
