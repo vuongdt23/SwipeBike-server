@@ -395,6 +395,12 @@ TripRequestRouter.post ('/acceptRequest:/:requestId', (req, res, next) => {
           result: createTripResult,
         });
 
+        prisma.tripRequest.updateMany ({
+          data: {TripStatusId: 7},
+          where: {
+            RequestId: TripRequest.RequestId,
+          },
+        });
         prisma.user
           .findFirst ({where: {UserId: TripRequest.RequestCreatorId}})
           .then (pushNotiReciever => {
