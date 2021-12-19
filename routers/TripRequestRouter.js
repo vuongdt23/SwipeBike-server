@@ -210,7 +210,7 @@ TripRequestRouter.post ('/rejectRequest/:requestId', (req, res, next) => {
         res.send ('You are not authorized to reject this request');
         return;
       } else {
-        if (tripRequest.TripStatusId !== 2) {
+        if (tripRequest.TripStatusId !== 5) {
           res.status (401);
           res.send ('You are not authorized to reject this request');
           return;
@@ -274,7 +274,7 @@ TripRequestRouter.post ('/cancelRequest/:requestId', (req, res, next) => {
         res.send ('You are not authorized to cancel this request');
         return;
       } else {
-        if (tripRequest.TripStatusId !== 2) {
+        if (tripRequest.TripStatusId !== 5) {
           res.status (401);
           res.send ('You are not authorized to reject this request');
           return;
