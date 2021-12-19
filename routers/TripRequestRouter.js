@@ -61,6 +61,8 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
               TripStatusId: 5,
               CandidateTripFrom: MyTrip.CandidateTripId,
               CandidateTripSent: TheirTrip.CandidateTripId,
+              TripTime: MyTrip.CandidateTripDateTime,
+              TripTime: MyTrip.CandidateTripDateTime,
             };
           } else {
             RequestToCreate = {
@@ -82,6 +84,8 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
               PassengerToLat: MyTrip.CandidateTripToLat,
               PassengerToLong: MyTrip.CandidateTripToLong,
               TripStatusId: 5,
+              TripTime: MyTrip.CandidateTripDateTime,
+
               CandidateTripFrom: MyTrip.CandidateTripId,
               CandidateTripSent: TheirTrip.CandidateTripId,
             };
@@ -120,6 +124,8 @@ TripRequestRouter.post ('/sendRequest', (req, res, next) => {
                       MyTrip.CandidateTripCreator.UserFullName,
                       MyTrip.CandidateTripCreator.UserProfilePic
                     );
+                  }).catch(error=>{
+                    res.status(500).send("something went wrong")
                   });
                 });
             });

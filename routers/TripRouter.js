@@ -19,6 +19,7 @@ TripRouter.get ('/getMyTrips', (req, res, next) => {
           },
         ],
       },
+      include: {TripDriver: true, TripPassenger: true},
     })
     .then (tripList => {
       res.json ({
