@@ -8,6 +8,7 @@ const storageBucket = require ('./APIKeys/storageBucket');
 const CandidateTripRouter = require ('./routers/CandidateTripRouter');
 const NotificationRouter = require ('./routers/NotificationRouter');
 const TripRequestRouter = require ('./routers/TripRequestRouter');
+const TripRouter = require ('./routers/TripRouter');
 
 var cors = require ('cors');
 
@@ -28,5 +29,6 @@ app.use ('/notification', NotificationRouter);
 app.use ('/profile', ProfileRouter);
 app.use ('/tripRequest', TripRequestRouter);
 app.use ('/candidatetrip', CandidateTripRouter);
+app.use ('/trip', TripRouter);
 
 app.listen (3001);
