@@ -1,12 +1,12 @@
-const firebaseAdmin = require ('firebase-admin');
+const firebaseAdmin = require("firebase-admin");
 
 const NotifyOfRequestCreation = (tokens, requesterName, requesterImgUrl) => {
   if (tokens.length === 0) return;
-  firebaseAdmin.messaging ().sendMulticast ({
+  firebaseAdmin.messaging().sendMulticast({
     tokens,
     notification: {
-      body: requesterName + ' muốn ghép đôi với bạn',
-      title: 'Lời mời ghép đôi mới',
+      body: requesterName + " muốn ghép đôi với bạn",
+      title: "Lời mời ghép đôi mới",
       imageUrl: requesterImgUrl,
     },
   });
@@ -18,11 +18,11 @@ const NotifyOfRequestRejection = (
   requestRejectorImgUrl
 ) => {
   if (tokens.length === 0) return;
-  firebaseAdmin.messaging ().sendMulticast ({
+  firebaseAdmin.messaging().sendMulticast({
     tokens,
     notification: {
-      body: requestRejectorName + ' đã từ chối yêu cầu ghép đôi với bạn',
-      title: 'Lời mời ghép đôi bị từ chối',
+      body: requestRejectorName + " đã từ chối yêu cầu ghép đôi với bạn",
+      title: "Lời mời ghép đôi bị từ chối",
       imageUrl: requestRejectorImgUrl,
     },
   });
@@ -34,11 +34,11 @@ const NotifyOfRequestCancel = (
   requestRejectorImgUrl
 ) => {
   if (tokens.length === 0) return;
-  firebaseAdmin.messaging ().sendMulticast ({
+  firebaseAdmin.messaging().sendMulticast({
     tokens,
     notification: {
-      body: requestRejectorName + 'đã hủy yêu cầu ghép đôi với bạn',
-      title: 'Lời mời ghép đôi bị hủy',
+      body: requestRejectorName + "đã hủy yêu cầu ghép đôi với bạn",
+      title: "Lời mời ghép đôi bị hủy",
       imageUrl: requestRejectorImgUrl,
     },
   });
@@ -50,20 +50,32 @@ const NotifyofRequestAcceptance = (
   requestAcceptorImgUrl
 ) => {
   if (tokens.length === 0) return;
-  firebaseAdmin.messaging ().sendMulticast ({
+  firebaseAdmin.messaging().sendMulticast({
     tokens,
     notification: {
-      body: requestAcceptorName + ' đã chấp nhận yêu cầu ghép đôi với bạn',
-      title: 'Yêu cầu ghép đôi được chấp nhận',
+      body: requestAcceptorName + " đã chấp nhận yêu cầu ghép đôi với bạn",
+      title: "Yêu cầu ghép đôi được chấp nhận",
       imageUrl: requestAcceptorImgUrl,
     },
   });
+};
 
+const NotifyOfTripCancellation = (tokens, tripCancellerName, tripCancellerImgUrl) => {
+  if (tokens.length === 0) return;
+  firebaseAdmin.messaging().sendMulticast({
+    tokens,
+    notification: {
+      body: tripCancellerName + " đã huỷ chuyến đi cùng bạn",
+      title: "Chuyến đi bị huỷ",
+      imageUrl: tripCancellerImgUrl,
+    },
+  });
 };
 
 module.exports = {
   NotifyOfRequestCreation: NotifyOfRequestCreation,
   NotifyOfRequestRejection: NotifyOfRequestRejection,
   NotifyOfRequestCancel: NotifyOfRequestCancel,
-  NotifyofRequestAcceptance: NotifyofRequestAcceptance
+  NotifyofRequestAcceptance: NotifyofRequestAcceptance,
+  NotifyOfTripCancellation: NotifyOfTripCancellation,
 };

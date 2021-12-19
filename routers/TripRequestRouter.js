@@ -107,7 +107,7 @@ TripRequestRouter.post("/sendRequest", (req, res, next) => {
                     UserNotificationTitle: "muốn ghép đôi chuyến đi với bạn",
                     CreatorImage: MyTrip.CandidateTripCreator.UserProfilePic,
                     NotificationRead: false,
-                    notificationTypeNotificationTypeId: 1,
+                    NotificationTypeId: 1,
                     NotificationCreatorId: MyTrip.CreatorId,
                     NotificationCreateTime: moment().toISOString(),
                   },
@@ -250,7 +250,7 @@ TripRequestRouter.post("/rejectRequest/:requestId", (req, res, next) => {
                     NotificationTargetId: pushNotireciever.UserId,
                     UserNotificationContent: "đã từ chối yêu cầu đôi chuyến đi",
                     UserNotificationTitle: "Yêu cầu bị từ chối",
-                    notificationTypeNotificationTypeId: 3,
+                    NotificationTypeId: 3,
                   },
                 });
               });
@@ -315,7 +315,7 @@ TripRequestRouter.post("/cancelRequest/:requestId", (req, res, next) => {
                     data: {
                       NotificationRead: false,
                       NotificationCreateTime: moment().toISOString(),
-                      notificationTypeNotificationTypeId: 4,
+                      NotificationTypeId: 4,
                       CreatorImage: userProfile.UserProfilePic,
                       UserNotificationTitle: "Yêu cầu ghép đôi bị hủy",
                       UserNotificationContent: "Yêu cầu ghép đôi bị hủy",
@@ -383,6 +383,7 @@ TripRequestRouter.post("/acceptRequest/:requestId", (req, res, next) => {
         TripCreatedTime: moment().toISOString(),
         TripStartTime: TripRequest.TripTime,
         FromRequest: TripRequest.RequestId,
+        TripStatusID: 2
       };
 
       prisma.trip.create({ data: TripToCreate }).then((createTripResult) => {
@@ -424,7 +425,7 @@ TripRequestRouter.post("/acceptRequest/:requestId", (req, res, next) => {
                 NotificationTargetId: pushNotiReciever.UserId,
                 UserNotificationContent: "đã chấp nhận yêu cầu đôi chuyến đi",
                 UserNotificationTitle: "Yêu cầu được chấp nhận",
-                notificationTypeNotificationTypeId: 2,
+                NotificationTypeId: 2,
               },
             });
           });
