@@ -383,7 +383,7 @@ TripRequestRouter.post("/acceptRequest/:requestId", (req, res, next) => {
         TripCreatedTime: moment().toISOString(),
         TripStartTime: TripRequest.TripTime,
         FromRequest: TripRequest.RequestId,
-        TripStatusID: 2
+        TripStatusID: 2,
       };
 
       prisma.trip.create({ data: TripToCreate }).then((createTripResult) => {
@@ -401,6 +401,15 @@ TripRequestRouter.post("/acceptRequest/:requestId", (req, res, next) => {
               result: createTripResult,
             });
           });
+        //Update other Requests
+        prisma.tripRequest.updateMany({
+          where: {
+            CandidateTripSent: TripRequest.CandidateTripSent,
+          },
+          data: {
+            TripStatusId: 9,
+          },
+        });
 
         prisma.user
           .findFirst({ where: { UserId: TripRequest.RequestCreatorId } })
