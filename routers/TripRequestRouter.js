@@ -390,17 +390,20 @@ TripRequestRouter.post ('/acceptRequest:/:requestId', (req, res, next) => {
       };
 
       prisma.trip.create ({data: TripToCreate}).then (createTripResult => {
-        res.status (200).json ({
-          message: 'accept request successfully',
-          result: createTripResult,
-        });
+        prisma.tripRequest
+          .updateMany ({
+            data: {TripStatusId: 7},
+            where: {
+              RequestId: TripRequest.RequestId,
+            },
+          })
+          .then (() => {
+            res.status (200).json ({
+              message: 'accept request successfully',
+              result: createTripResult,
+            });
+          });
 
-        prisma.tripRequest.updateMany ({
-          data: {TripStatusId: 7},
-          where: {
-            RequestId: TripRequest.RequestId,
-          },
-        });
         prisma.user
           .findFirst ({where: {UserId: TripRequest.RequestCreatorId}})
           .then (pushNotiReciever => {
