@@ -3,7 +3,7 @@
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://root:duyducmysql012@localhost:3306/swipebike?schema=public"
+  url      = "mysql://root:password@localhost:3306/swipebike?schema=public"
 }
 
 generator client {
@@ -39,9 +39,10 @@ model User {
 }
 
 model University {
-  UniversityId          Int    @id @default(autoincrement())
-  UniversityName        String
-  UniversityDescription String
+  UniversityId          Int   @id @default(autoincrement())
+  UniversityCode  String?
+  UniversityFullName        String?
+  UniversityEmailSuffix String?
   Users                 User[]
 
   @@map("universities")
