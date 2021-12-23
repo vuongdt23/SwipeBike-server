@@ -3,7 +3,11 @@ const prisma = new PrismaClient ();
 const scheduler = require ('node-schedule');
 const moment = require ('moment');
 const {getFCMTokensByUserId} = require ('../FCMOperations/TokenStore');
-const {NotifyOfCandidateTripTimedOut} = require ('../FCMOperations/TimedOut');
+const {
+  NotifyOfCandidateTripTimedOut,
+  NotifyOfTripRequestTimedOut,
+  NotifyOfTripTimedOut,
+} = require ('../FCMOperations/TimedOut');
 const firebaseAdmin = require ('firebase-admin');
 const apiKey = require ('../APIkeys/apiKey.json');
 
@@ -102,13 +106,11 @@ const updateCandidateTripsTimedOut = async () => {
     });
 };
 
-updateCandidateTripsTimedOut ();
-
 const updateRequestsTimedOut = () => {
   prisma.tripRequest
     .findMany ({where: {TripStatusId: 5}})
     .then (ActiveTripRequests => {
-      tripRequestIdsToUpdate = [];
+      let tripRequestIdsToUpdate = [];
       ActiveTripRequests.forEach (tripRequest => {
         const now = moment ();
         const TripTime = moment (tripRequest.TripTime);
@@ -119,7 +121,6 @@ const updateRequestsTimedOut = () => {
           tripRequestIdsToUpdate.push (tripRequest.RequestId);
         }
       });
-      console.log ('trip requests that have timed out', tripIdsToUpdate);
 
       prisma.tripRequest
         .updateMany ({
@@ -132,6 +133,40 @@ const updateRequestsTimedOut = () => {
           console.log ('updated requests', updateResult);
 
           //Sending Push Notifications
+          prisma.tripRequest
+            .findMany ({
+              where: {
+                RequestId: {in: tripRequestIdsToUpdate},
+              },
+              select: {RequestCreator: true},
+            })
+            .then (usersToReceivePushNotis => {
+              usersToReceivePushNotis.forEach (async user => {
+                const tokens = [];
+                const querySnapshot = await getFCMTokensByUserId (
+                  user.CandidateTripCreator.UserAccount
+                );
+                querySnapshot.docs.forEach (doc => {
+                  tokens.push (doc.data ().token);
+                });
+
+                NotifyOfTripRequestTimedOut (tokens);
+
+                //Create Notifications in system
+                prisma.userNotification.create ({
+                  data: {
+                    CreatorImage: user.RequestCreator.UserProfilePic,
+                    NotificationType: 7,
+                    NotificationCreateTime: moment ().toISOString (),
+                    NotificationCreatorId: user.CandidateTripCreator.UserId,
+                    NotificationTargetId: user.CandidateTripCreator.UserId,
+                    NotificationRead: false,
+                    UserNotificationContent: 'Yêu cầu của bạn không được chấp nhận ghép đôi và đã hết hạn',
+                    UserNotificationTitle: 'Yêu cầu đi của bạn không được chấp nhận ghép đôi và đã hết hạn',
+                  },
+                });
+              });
+            });
         })
         .catch (error => {
           console.log (error);
@@ -157,19 +192,44 @@ const updateTripsTimedOut = () => {
           tripIdsToUpdate.push (trip.RequestId);
         }
       });
-      console.log ('trip requests that have timed out', tripIdsToUpdate);
+      console.log ('trips that have timed out', tripIdsToUpdate);
 
-      prisma.tripRequest
+      prisma.trip
         .updateMany ({
           data: {
             TripStatusId: 11,
           },
-          where: {RequestId: {in: tripRequestIdsToUpdate}},
+          where: {TripId: {in: tripRequestIdsToUpdate}},
         })
         .then (updateResult => {
           console.log ('updated requests', updateResult);
 
           //Sending Push Notifications
+
+          prisma.tripRequest
+            .findMany ({
+              where: {
+                RequestId: {in: tripRequestIdsToUpdate},
+              },
+              select: {RequestCreator: true},
+            })
+            .then (usersToReceivePushNotis => {
+              usersToReceivePushNotis.forEach (async user => {
+                const tokens = [];
+                const querySnapshot = await getFCMTokensByUserId (
+                  user.CandidateTripCreator.UserAccount
+                );
+                querySnapshot.docs.forEach (doc => {
+                  tokens.push (doc.data ().token);
+                });
+
+                NotifyOfTripTimedOut ().then (sendResult =>
+                  console.log (sendResult)
+                );
+              });
+            });
+
+          //
         })
         .catch (error => {
           console.log (error);
