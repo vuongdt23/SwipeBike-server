@@ -6,7 +6,7 @@ const {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  sendEmailVerification
+  sendEmailVerification,
 } = require ('firebase/auth');
 const auth = getAuth (firebase);
 const firebaseAdmin = require ('firebase-admin');
@@ -18,6 +18,7 @@ AuthRouter.post ('/signUp', async (req, res, next) => {
   const UserAccount = {
     UserEmail: req.body.UserEmail,
     AccountPassword: req.body.AccountPassword,
+    UniversityId: req.body.UniversityId,
   };
 
   createUserWithEmailAndPassword (
@@ -30,6 +31,7 @@ AuthRouter.post ('/signUp', async (req, res, next) => {
         data: {
           UserEmail: UserAccount.UserEmail,
           UserAccount: result.user.uid,
+          UniversityID: UserAccount.UniversityId,
         },
       })
       .then (final => {
