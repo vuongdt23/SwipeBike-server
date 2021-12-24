@@ -13,6 +13,8 @@ const {sendEmailVerification} = require ('firebase/auth');
 
 ProfileRouter.get ('/view', (req, res, next) => {
   const user = req.user;
+  console.log (user);
+
   prisma.user
     .findFirst ({
       where: {
@@ -20,7 +22,8 @@ ProfileRouter.get ('/view', (req, res, next) => {
       },
     })
     .then (response => {
-      response.verified = res.json (response);
+      response.IsVerified = user.email_verified;
+      res.json (response);
     })
     .catch (firebaseError => {
       res.json ({
