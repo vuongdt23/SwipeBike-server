@@ -446,10 +446,13 @@ TripRequestRouter.post ('/acceptRequest/:requestId', (req, res, next) => {
                 NotificationCreatorId: req.user.profile.UserId,
                 NotificationRead: false,
                 NotificationTargetId: pushNotiReciever.UserId,
-                UserNotificationContent: 'đã chấp nhận yêu cầu đôi chuyến đi',
+                UserNotificationContent: 'đã chấp nhận yêu cầu ghép đôi chuyến đi',
                 UserNotificationTitle: 'Yêu cầu được chấp nhận',
                 NotificationTypeId: 2,
+                CreatorImage: req.user.profile.UserProfilePic
               },
+            }).then(result=>{
+              console.log(result)
             });
           });
       });
