@@ -177,7 +177,7 @@ const updateRequestsTimedOut = () => {
     });
 };
 
-const updateTripsTimedOut = () => {
+const updateTripCompletion = () => {
   prisma.trip
     .findMany ({where: {TripStatusId: 2}})
     .then (ActiveTrips => {
@@ -188,7 +188,7 @@ const updateTripsTimedOut = () => {
 
         let duration = moment.duration (now.diff (trip));
 
-        if (duration.asHours () > timeOutDuration && now.isAfter (TripTime)) {
+        if (now.isAfter (TripTime)) {
           tripIdsToUpdate.push (trip.RequestId);
         }
       });
@@ -197,39 +197,12 @@ const updateTripsTimedOut = () => {
       prisma.trip
         .updateMany ({
           data: {
-            TripStatusId: 11,
+            TripStatusId: 3,
           },
           where: {TripId: {in: tripRequestIdsToUpdate}},
         })
         .then (updateResult => {
           console.log ('updated requests', updateResult);
-
-          //Sending Push Notifications
-
-          prisma.tripRequest
-            .findMany ({
-              where: {
-                RequestId: {in: tripRequestIdsToUpdate},
-              },
-              select: {RequestCreator: true},
-            })
-            .then (usersToReceivePushNotis => {
-              usersToReceivePushNotis.forEach (async user => {
-                const tokens = [];
-                const querySnapshot = await getFCMTokensByUserId (
-                  user.CandidateTripCreator.UserAccount
-                );
-                querySnapshot.docs.forEach (doc => {
-                  tokens.push (doc.data ().token);
-                });
-
-                NotifyOfTripTimedOut ().then (sendResult =>
-                  console.log (sendResult)
-                );
-              });
-            });
-
-          //
         })
         .catch (error => {
           console.log (error);
@@ -239,3 +212,7 @@ const updateTripsTimedOut = () => {
       console.log (error);
     });
 };
+
+scheduler.scheduleJob (rule, updateCandidateTripsTimedOut);
+scheduler.scheduleJob (rule, updateRequestsTimedOut);
+scheduler.scheduleJob (rule, updateTripCompletion);
