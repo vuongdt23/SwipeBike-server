@@ -154,15 +154,19 @@ TripRouter.post ('/rateTrip/:tripId', (req, res) => {
       if (TripToRate.TripPassengerId !== userId) {
         res.status (401).send ('You are not authorized to rate this trip');
         return;
-      } else if (!TripToRate.TripRatingId) {
-        res.status (402).send ('Trip trip is not to be rated');
+      } else if (TripToRate.TripRatingId !== null) {
+        console.log (
+          'The rating of the trip is null ',
+          !TripToRate.TripRatingId
+        );
+        res.status (400).send ('Trip trip is not to be rated');
         return;
       } else {
         prisma.userRating
           .create ({
             data: {
               RatingLiked: Liked,
-              RatingUser: TripToRate.TripDriverId,
+              UserId: TripToRate.TripDriverId,
             },
           })
           .then (createdRating => {
@@ -171,16 +175,25 @@ TripRouter.post ('/rateTrip/:tripId', (req, res) => {
                 where: {TripId: ToRateTripId},
                 data: {TripRatingId: createdRating.RatingId},
               })
+              .then (updateSucessResult => {
+                res.send ('Rated the trip sucessfully');
+                console.log(updateSucessResult)
+              })
               .catch (error => {
+                console.log (error);
+
                 res.status (500).send ('Something went wrong');
               });
           })
           .catch (error => {
+            console.log (error);
             res.status (500).send ('Something went wrong');
           });
       }
     })
     .catch (error => {
+      console.log (error);
+
       res.status (500).send ('Something went wrong');
     });
 });
