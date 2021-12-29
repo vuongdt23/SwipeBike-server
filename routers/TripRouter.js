@@ -1,27 +1,27 @@
-const express = require("express");
-const TripRouter = express.Router();
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
-const { NotifyOfTripCancellation } = require("../FCMOperations/TripRequest");
-const { getFCMTokensByUserId } = require("../FCMOperations/TokenStore");
-const moment = require('moment');
-TripRouter.get("/getMyTrips", (req, res, next) => {
+const express = require ('express');
+const TripRouter = express.Router ();
+const {PrismaClient} = require ('@prisma/client');
+const prisma = new PrismaClient ();
+const {NotifyOfTripCancellation} = require ('../FCMOperations/TripRequest');
+const {getFCMTokensByUserId} = require ('../FCMOperations/TokenStore');
+const moment = require ('moment');
+const {resolveSoa} = require ('dns');
+TripRouter.get ('/getMyTrips', (req, res, next) => {
   const user = req.user.profile;
 
-  console.log("user requested trips", user.UserId);
+  console.log ('user requested trips', user.UserId);
   prisma.trip
-    .findMany({
+    .findMany ({
       where: {
-        TripStatusID:2, 
+        TripStatusID: 2,
         OR: [
           {
-            TripDriverId: Number.parseInt(user.UserId),
+            TripDriverId: Number.parseInt (user.UserId),
           },
           {
-            TripPassengerId: Number.parseInt(user.UserId),
+            TripPassengerId: Number.parseInt (user.UserId),
           },
         ],
-        
       },
       include: {
         TripDriver: {
@@ -38,43 +38,43 @@ TripRouter.get("/getMyTrips", (req, res, next) => {
         },
       },
     })
-    .then((tripList) => {
-      res.json({
+    .then (tripList => {
+      res.json ({
         trips: tripList,
       });
     })
-    .catch((error) => {
-      res.status(500).json({
-        message: "something is wrong",
+    .catch (error => {
+      res.status (500).json ({
+        message: 'something is wrong',
       });
-      console.log(error);
+      console.log (error);
     });
 });
 
-TripRouter.post("/cancelTrip/:tripId", (req, res) => {
-  const tripId = Number.parseInt(req.params.tripId);
+TripRouter.post ('/cancelTrip/:tripId', (req, res) => {
+  const tripId = Number.parseInt (req.params.tripId);
   const userProfile = req.user.profile;
   prisma.trip
-    .findFirst({
+    .findFirst ({
       where: {
         TripId: tripId,
       },
-      include: { TripDriver: true, TripPassenger: true },
+      include: {TripDriver: true, TripPassenger: true},
     })
-    .then((TripToCancel) => {
-      console.log("user sending cancel request", userProfile.UserId);
-      console.log("user  as driver", TripToCancel.TripDriverId);
-      console.log("user  as passenger", TripToCancel.TripPassengerId);
+    .then (TripToCancel => {
+      console.log ('user sending cancel request', userProfile.UserId);
+      console.log ('user  as driver', TripToCancel.TripDriverId);
+      console.log ('user  as passenger', TripToCancel.TripPassengerId);
       if (
         TripToCancel.TripDriverId !== userProfile.UserId &&
         TripToCancel.TripPassengerId !== userProfile.UserId
       ) {
-        res.status(401).send("you are not authorized to cancel this trip");
+        res.status (401).send ('you are not authorized to cancel this trip');
         return;
       }
 
       prisma.trip
-        .updateMany({
+        .updateMany ({
           where: {
             TripId: TripToCancel.TripId,
           },
@@ -82,65 +82,106 @@ TripRouter.post("/cancelTrip/:tripId", (req, res) => {
             TripStatusID: 8,
           },
         })
-        .then((tripCancelResult) => {
-          res.status(200).send("cancel trip sucessfully");
+        .then (tripCancelResult => {
+          res.status (200).send ('cancel trip sucessfully');
 
           if (TripToCancel.TripDriverId === userProfile.UserId) {
-            getFCMTokensByUserId(TripToCancel.TripPassenger.UserAccount).then(
-              (FCMTokens) => {
-                const tokens = [];
-                FCMTokens.forEach((doc) => tokens.push(doc.data().token));
-                console.log("sending push notis to devices ", tokens);
-                NotifyOfTripCancellation(
-                  tokens,
-                  TripToCancel.TripDriver.UserFullName,
-                  TripToCancel.TripDriver.UserProfilePic
-                );
-              }
-            );
+            getFCMTokensByUserId (
+              TripToCancel.TripPassenger.UserAccount
+            ).then (FCMTokens => {
+              const tokens = [];
+              FCMTokens.forEach (doc => tokens.push (doc.data ().token));
+              console.log ('sending push notis to devices ', tokens);
+              NotifyOfTripCancellation (
+                tokens,
+                TripToCancel.TripDriver.UserFullName,
+                TripToCancel.TripDriver.UserProfilePic
+              );
+            });
 
-            prisma.userNotification.create({
+            prisma.userNotification.create ({
               data: {
-                UserNotificationContent: "đã huỷ chuyến đi với bạn",
+                UserNotificationContent: 'đã huỷ chuyến đi với bạn',
                 NotificationTargetId: TripToCancel.TripPassengerId,
-                UserNotificationTitle: "đã huỷ chuyến đi với bạn",
+                UserNotificationTitle: 'đã huỷ chuyến đi với bạn',
                 CreatorImage: TripToCancel.TripDriver.UserProfilePic,
                 NotificationRead: false,
                 NotificationTypeId: 5,
                 NotificationCreatorId: TripToCancel.TripDriverId,
-                NotificationCreateTime: moment().toISOString(),
+                NotificationCreateTime: moment ().toISOString (),
               },
             });
           }
 
           if (TripToCancel.TripPassengerId === userProfile.UserId) {
-            getFCMTokensByUserId(TripToCancel.TripDriver.UserAccount).then(
-              (FCMTokens) => {
-                const tokens = [];
-                FCMTokens.forEach((doc) => tokens.push(doc.data().token));
-                console.log("sending push notis to devices ", tokens);
-                NotifyOfTripCancellation(
-                  tokens,
-                  TripToCancel.TripPassenger.UserFullName,
-                  TripToCancel.TripPassenger.UserProfilePic
-                );
-              }
-            );
+            getFCMTokensByUserId (
+              TripToCancel.TripDriver.UserAccount
+            ).then (FCMTokens => {
+              const tokens = [];
+              FCMTokens.forEach (doc => tokens.push (doc.data ().token));
+              console.log ('sending push notis to devices ', tokens);
+              NotifyOfTripCancellation (
+                tokens,
+                TripToCancel.TripPassenger.UserFullName,
+                TripToCancel.TripPassenger.UserProfilePic
+              );
+            });
 
-            prisma.userNotification.create({
+            prisma.userNotification.create ({
               data: {
-                UserNotificationContent: "đã huỷ chuyến đi với bạn",
+                UserNotificationContent: 'đã huỷ chuyến đi với bạn',
                 NotificationTargetId: TripToCancel.TripDriverId,
-                UserNotificationTitle: "đã huỷ chuyến đi với bạn",
+                UserNotificationTitle: 'đã huỷ chuyến đi với bạn',
                 CreatorImage: TripToCancel.TripPassenger.UserProfilePic,
                 NotificationRead: false,
                 NotificationTypeId: 5,
                 NotificationCreatorId: TripToCancel.TripPassengerId,
-                NotificationCreateTime: moment().toISOString(),
+                NotificationCreateTime: moment ().toISOString (),
               },
             });
           }
         });
+    });
+});
+
+TripRouter.post ('/rateTrip/:tripId', (req, res) => {
+  const ToRateTripId = Number.parseInt (req.params.tripId);
+  const Liked = req.body.Liked;
+  const userId = req.user.profile.UserId;
+  prisma.trip
+    .findFirst ({where: {TripId: ToRateTripId}})
+    .then (TripToRate => {
+      if (TripToRate.TripPassengerId !== userId) {
+        res.status (401).send ('You are not authorized to rate this trip');
+        return;
+      } else if (!TripToRate.TripRatingId) {
+        res.status (402).send ('Trip trip is not to be rated');
+        return;
+      } else {
+        prisma.userRating
+          .create ({
+            data: {
+              RatingLiked: Liked,
+              RatingUser: TripToRate.TripDriverId,
+            },
+          })
+          .then (createdRating => {
+            prisma.trip
+              .updateMany ({
+                where: {TripId: ToRateTripId},
+                data: {TripRatingId: createdRating.RatingId},
+              })
+              .catch (error => {
+                res.status (500).send ('Something went wrong');
+              });
+          })
+          .catch (error => {
+            res.status (500).send ('Something went wrong');
+          });
+      }
+    })
+    .catch (error => {
+      res.status (500).send ('Something went wrong');
     });
 });
 

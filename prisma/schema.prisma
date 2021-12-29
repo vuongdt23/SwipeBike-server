@@ -35,13 +35,14 @@ model User {
   UniversityID      Int?
   ContactsAsOwner   UserContact[] @relation("ContactOwner")
   ContactssAsTarget UserContact[] @relation("ContactTarget")
+  UserRating        UserRating[]
   @@map("users")
 }
 
 model University {
-  UniversityId          Int   @id @default(autoincrement())
-  UniversityCode  String?
-  UniversityFullName        String?
+  UniversityId          Int     @id @default(autoincrement())
+  UniversityCode        String?
+  UniversityFullName    String?
   UniversityEmailSuffix String?
   Users                 User[]
 
@@ -142,9 +143,11 @@ model Trip {
   PassengerToLong      Float?
 
   TripStatusID    Int?
+  TripRatingId    Int         @unique
   FromRequest     Int?
   TripCreatedTime String?
   TripStartTime   String?
+  UserRating      UserRating? @relation(fields: [TripRatingId], references: [RatingId])
   @@map("trips")
 }
 
@@ -190,4 +193,12 @@ model NotificationType {
   NotificationTypeDescription String
   Notifications               UserNotification[]
 
+}
+
+model UserRating {
+  RatingId    Int      @id @default(autoincrement())
+  UserId      Int?
+  RatingUser  User?    @relation(fields: [UserId], references: [UserId])
+  RatingLiked Boolean?
+  Trip        Trip?
 }
