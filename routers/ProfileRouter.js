@@ -10,6 +10,7 @@ const upload = multer ({
   storage: multer.memoryStorage (),
 });
 const {sendEmailVerification} = require ('firebase/auth');
+const {truncate} = require ('fs');
 
 ProfileRouter.get ('/view', (req, res, next) => {
   const user = req.user;
@@ -21,8 +22,18 @@ ProfileRouter.get ('/view', (req, res, next) => {
         UserAccount: user.uid,
       },
     })
-    .then (response => {
+    .then (async response => {
       response.IsVerified = user.email_verified;
+      const LikeCount = await prisma.userRating.aggregate ({
+        _count: true,
+        where: {RatingLiked: true, UserId: response.UserId},
+      });
+      const DisLikeCount = await prisma.userRating.aggregate ({
+        _count: true,
+        where: {RatingLiked: false, UserId: response.UserId},
+      });
+      response.LikeCount = LikeCount._count;
+      response.DisLikeCount = DisLikeCount._count;
       res.json (response);
     })
     .catch (firebaseError => {
@@ -40,7 +51,17 @@ ProfileRouter.get ('/getProfileById/:userId', (req, res, next) => {
       },
       include: {UserUniversity: true},
     })
-    .then (response => {
+    .then (async response => {
+      const LikeCount = await prisma.userRating.aggregate ({
+        _count: true,
+        where: {RatingLiked: true, UserId: userId},
+      });
+      const DisLikeCount = await prisma.userRating.aggregate ({
+        _count: true,
+        where: {RatingLiked: false, UserId: userId},
+      });
+      response.LikeCount = LikeCount._count;
+      response.DisLikeCount = DisLikeCount._count;
       res.json ({
         profile: response,
       });

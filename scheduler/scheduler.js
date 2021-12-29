@@ -213,6 +213,7 @@ const updateTripCompletion = () => {
     });
 };
 
+updateTripCompletion();
 scheduler.scheduleJob (rule, updateCandidateTripsTimedOut);
 scheduler.scheduleJob (rule, updateRequestsTimedOut);
 scheduler.scheduleJob (rule, updateTripCompletion);
