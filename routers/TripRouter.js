@@ -151,7 +151,10 @@ TripRouter.post ('/rateTrip/:tripId', (req, res) => {
   prisma.trip
     .findFirst ({where: {TripId: ToRateTripId}})
     .then (TripToRate => {
-      if (TripToRate.TripPassengerId !== userId) {
+      if (
+        TripToRate.TripPassengerId !== userId &&
+        TripToRate.TripDriverId !== userId
+      ) {
         res.status (401).send ('You are not authorized to rate this trip');
         return;
       } else if (TripToRate.TripRatingId !== null) {
@@ -177,7 +180,7 @@ TripRouter.post ('/rateTrip/:tripId', (req, res) => {
               })
               .then (updateSucessResult => {
                 res.send ('Rated the trip sucessfully');
-                console.log(updateSucessResult)
+                console.log (updateSucessResult);
               })
               .catch (error => {
                 console.log (error);
@@ -194,6 +197,28 @@ TripRouter.post ('/rateTrip/:tripId', (req, res) => {
     .catch (error => {
       console.log (error);
 
+      res.status (500).send ('Something went wrong');
+    });
+});
+
+TripRouter.get ('/getUserCompleteTrips', (req, res) => {
+  const userId = req.user.profile.UserId;
+
+  prisma.trip
+    .findMany ({
+      where: {
+        TripStatusID: 3,
+        OR: [{TripDriverId: userId}, {TripPassengerId: userId}],
+      },
+      include: {UserRating: true, TripDriver: true, TripPassenger: true},
+    })
+    .then (tripList => {
+      res.status (200).json ({
+        trips: tripList,
+      });
+    })
+    .catch (error => {
+      console.log (error);
       res.status (500).send ('Something went wrong');
     });
 });
