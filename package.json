@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js && cd scheduler/scheduler.js"
+    "start": "nodemon app.js",
+    "daemon": "node scheduler/scheduler"
   },
   "author": "vuongdt23",
   "license": "ISC",

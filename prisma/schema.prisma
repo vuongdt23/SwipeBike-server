@@ -143,11 +143,10 @@ model Trip {
   PassengerToLong      Float?
 
   TripStatusID    Int?
-  TripRatingId    Int?        @unique
   FromRequest     Int?
   TripCreatedTime String?
   TripStartTime   String?
-  UserRating      UserRating? @relation(fields: [TripRatingId], references: [RatingId])
+  UserRatings      UserRating[]
   @@map("trips")
 }
 
@@ -200,5 +199,6 @@ model UserRating {
   UserId      Int?
   RatingUser  User?    @relation(fields: [UserId], references: [UserId])
   RatingLiked Boolean?
-  Trip        Trip?
+  Trip        Trip?    @relation(fields: [TripId], references: [TripId])
+  TripId      Int?
 }
