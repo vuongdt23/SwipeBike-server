@@ -32,6 +32,18 @@ ProfileRouter.get ('/view', (req, res, next) => {
         _count: true,
         where: {RatingLiked: false, UserId: response.UserId},
       });
+
+      const TripCount = await prisma.trip.aggregate ({
+        _count: true,
+        where: {
+          TripStatusID: 3,
+          OR: [
+            {TripDriverId: user.profile.UserId},
+            {TripPassengerId: user.profile.UserId},
+          ],
+        },
+      });
+      response.TripCount = TripCount._count;
       response.LikeCount = LikeCount._count;
       response.DisLikeCount = DisLikeCount._count;
       res.json (response);
@@ -60,6 +72,15 @@ ProfileRouter.get ('/getProfileById/:userId', (req, res, next) => {
         _count: true,
         where: {RatingLiked: false, UserId: userId},
       });
+      const TripCount = await prisma.trip.aggregate ({
+        _count: true,
+        where: {
+          TripStatusID: 3,
+          OR: [{TripDriverId: userId}, {TripPassengerId: userId}],
+        },
+      });
+      response.TripCount = TripCount._count;
+
       response.LikeCount = LikeCount._count;
       response.DisLikeCount = DisLikeCount._count;
       res.json ({
