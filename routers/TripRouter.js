@@ -197,7 +197,7 @@ TripRouter.get ('/getUserCompleteTrips', (req, res) => {
         TripStatusID: 3,
         OR: [{TripDriverId: userId}, {TripPassengerId: userId}],
       },
-      include: {UserRating: true, TripDriver: true, TripPassenger: true},
+      include: {UserRatings: true, TripDriver: true, TripPassenger: true},
     })
     .then (tripList => {
       res.status (200).json ({
