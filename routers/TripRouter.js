@@ -165,11 +165,16 @@ TripRouter.post ('/rateTrip/:tripId', (req, res) => {
         res.status (400).send ('Trip trip is not to be rated');
         return;
       } else {
+        const UserIdToRate = 0;
+        if (TripToRate.TripDriverId === userId)
+          UserIdToRate = TripToRate.TripPassengerId;
+        if (TripToRate.TripPassengerId === userId)
+          UserIdToRate = TripToRate.TripDriverId;
         prisma.userRating
           .create ({
             data: {
               RatingLiked: Liked,
-              UserId: TripToRate.TripDriverId,
+              UserId: UserIdToRate,
             },
           })
           .then (createdRating => {
