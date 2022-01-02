@@ -72,4 +72,27 @@ NotificationRouter.post ('/setAllMyNotificationsAsRead', (req, res) => {
       res.status (500).send ('something went wrong');
     });
 });
+NotificationRouter.get ('/hasNewNotifications', (req, res) => {
+  const user = req.user;
+
+  prisma.userNotification
+    .findMany ({
+      where: {
+        NotificationRead: false,
+        NotificationTargetId: user.profile.UserId,
+      },
+    })
+    .then (result => {
+      if (result.length > 0) {
+        res.json ({HasNewNotifications: true});
+      } else {
+        res.json ({HasNewNotifications: false});
+      }
+    })
+    .catch (error => {
+      console.log (error);
+      res.status (500).send ('something went wrong');
+    });
+});
+
 module.exports = NotificationRouter;
