@@ -37,4 +37,6 @@ NotificationRouter.get("/getMyNotifications", (req, res) => {
       });
     });
 });
+
+
 module.exports = NotificationRouter;
