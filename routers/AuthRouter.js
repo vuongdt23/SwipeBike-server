@@ -8,6 +8,7 @@ const {
   signInWithEmailAndPassword,
   sendEmailVerification,
   sendPasswordResetEmail,
+  updatePassword,
 } = require ('firebase/auth');
 const auth = getAuth (firebase);
 const firebaseAdmin = require ('firebase-admin');
@@ -110,4 +111,25 @@ AuthRouter.post ('/login', (req, res) => {
     });
 });
 
+AuthRouter.post ('/changePassword', (req, res) => {
+  const userEmail = req.body.UserEmail;
+  const oldPassword = req.body.OldPassword;
+  const newPassword = req.body.NewPassword;
+
+  signInWithEmailAndPassword (auth, userEmail, oldPassword)
+    .then (
+      updatePassword (auth.currentUser, newPassword)
+        .then (() => {
+          res.send ('update Password sucessfully');
+        })
+        .catch (error => {
+          console.log (error);
+
+          res.status (500).json ({error: error});
+        })
+    )
+    .catch (error => {
+      res.status (500).json ({error: error});
+    });
+});
 module.exports = AuthRouter;
