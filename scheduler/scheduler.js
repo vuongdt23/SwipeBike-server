@@ -197,7 +197,7 @@ const updateTripCompletion = () => {
       prisma.trip
         .updateMany ({
           data: {
-            TripStatusId: 3,
+            TripStatusID: 3,
           },
           where: {TripId: {in: tripRequestIdsToUpdate}},
         })
@@ -213,7 +213,6 @@ const updateTripCompletion = () => {
     });
 };
 
-updateTripCompletion();
 scheduler.scheduleJob (rule, updateCandidateTripsTimedOut);
 scheduler.scheduleJob (rule, updateRequestsTimedOut);
 scheduler.scheduleJob (rule, updateTripCompletion);
