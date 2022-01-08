@@ -22,3 +22,5 @@ ReportRouter.post ('/reportUser/:userId', (req, res) => {
         res.status(500).send("something went wrong, try again later")
     });
 });
+
+module.exports = ReportRouter
