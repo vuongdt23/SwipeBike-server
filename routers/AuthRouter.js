@@ -66,20 +66,25 @@ AuthRouter.post ('/signUp', async (req, res, next) => {
     auth,
     UserAccount.UserEmail,
     UserAccount.AccountPassword
-  ).then (result => {
-    prisma.user
-      .create ({
-        data: {
-          UserEmail: UserAccount.UserEmail,
-          UserAccount: result.user.uid,
-          UniversityID: UserAccount.UniversityId,
-        },
-      })
-      .then (final => {
-        res.status (200);
-        res.json (final);
-      });
-  });
+  )
+    .then (result => {
+      prisma.user
+        .create ({
+          data: {
+            UserEmail: UserAccount.UserEmail,
+            UserAccount: result.user.uid,
+            UniversityID: UserAccount.UniversityId,
+          },
+        })
+        .then (final => {
+          res.status (200);
+          res.json (final);
+        });
+    })
+    .catch (error => {
+      console.log ('registration error', error);
+      res.status (500).send ('something went wrong');
+    });
 });
 
 AuthRouter.post ('/login', (req, res) => {

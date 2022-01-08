@@ -36,6 +36,9 @@ model User {
   ContactsAsOwner   UserContact[] @relation("ContactOwner")
   ContactssAsTarget UserContact[] @relation("ContactTarget")
   UserRating        UserRating[]
+
+  ReportsReceived UserReport[] @relation("ReportSend")
+  ReportsSent     UserReport[] @relation("ReportReceived")
   @@map("users")
 }
 
@@ -146,7 +149,7 @@ model Trip {
   FromRequest     Int?
   TripCreatedTime String?
   TripStartTime   String?
-  UserRatings      UserRating[]
+  UserRatings     UserRating[]
   @@map("trips")
 }
 
@@ -201,4 +204,14 @@ model UserRating {
   RatingLiked Boolean?
   Trip        Trip?    @relation(fields: [TripId], references: [TripId])
   TripId      Int?
+}
+
+model UserReport {
+  ReportId        Int     @id @default(autoincrement())
+  ReportCreatorId Int?
+  ReportTargetId  Int?
+  ReportCreator   User?   @relation("ReportSend", references: [UserId], fields: [ReportCreatorId])
+  ReportTarget    User?   @relation("ReportReceived", references: [UserId], fields: [ReportTargetId])
+  ReportContent   String?
+  ReportTitle     String?
 }

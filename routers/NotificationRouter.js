@@ -72,6 +72,8 @@ NotificationRouter.post ('/setAllMyNotificationsAsRead', (req, res) => {
       res.status (500).send ('something went wrong');
     });
 });
+
+
 NotificationRouter.get ('/hasNewNotifications', (req, res) => {
   const user = req.user;
 

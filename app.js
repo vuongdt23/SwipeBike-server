@@ -9,6 +9,7 @@ const CandidateTripRouter = require ('./routers/CandidateTripRouter');
 const NotificationRouter = require ('./routers/NotificationRouter');
 const TripRequestRouter = require ('./routers/TripRequestRouter');
 const TripRouter = require ('./routers/TripRouter');
+const ReportRouter = require ('./routers/ReportRouter');
 var cors = require ('cors');
 
 firebaseAdmin.initializeApp ({
@@ -28,8 +29,7 @@ app.use ('/notification', NotificationRouter);
 app.use ('/profile', ProfileRouter);
 app.use ('/tripRequest', TripRequestRouter);
 app.use ('/candidatetrip', CandidateTripRouter);
+app.use ('/report', ReportRouter);
 app.use ('/trip', TripRouter);
 
 app.listen (3001);
-
-
