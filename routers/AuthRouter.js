@@ -83,7 +83,7 @@ AuthRouter.post ('/signUp', async (req, res, next) => {
     })
     .catch (error => {
       console.log ('registration error', error);
-      res.status (500).send ('something went wrong');
+      res.status (500).json ({message: 'something went wrong', error: error});
     });
 });
 
